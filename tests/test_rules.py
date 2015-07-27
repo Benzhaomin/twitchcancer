@@ -8,11 +8,12 @@ from sanitwitcher.rules import *
 messages = {
   'sentence': 'this is a long sentence but not too long',
   'oneemote': 'Kappa',
-  'onechar': 'K',
+  'onechar': 'k',
   'oneword': 'Elephant',
   'short': 'lol',
   'emotesandwords': 'THIS Kappa IS Kappa WHAT Kappa I Kappa CALL Kappa MUSIC',
   'longsentence': 'this is a long sentence but so long that it\s too long this is a long sentence but so long that it\s too long this is a long sentence but so long that it\s too long',
+  'caps': 'THATS A LOT OF Caps',
 }
 
 class TestRule(unittest.TestCase):
@@ -37,7 +38,7 @@ class TestMinimumWordCount(unittest.TestCase):
     r = MinimumWordCount()
     
     for k,v in messages.items():
-      if k == "sentence" or k =="emotesandwords" or k =="longsentence":
+      if k in ["sentence", "emotesandwords", "longsentence", "caps"]:
         self.assertFalse(r.broken(v))
       else:
         self.assertTrue(r.broken(v))
@@ -65,8 +66,21 @@ class TestMaximumMessageLength(unittest.TestCase):
         self.assertTrue(r.broken(v))
       else:
         self.assertFalse(r.broken(v))
-        
-class TestRulesEmoteCount(unittest.TestCase):
+
+# message must have a {ratio} of caps to characters maximum
+class TestCapsRatio(unittest.TestCase):
+  
+  # sanitwitcher.rules.CapsRatio.broken()
+  def test_caps_ratio_broken(self):
+    r = CapsRatio()
+    
+    for k,v in messages.items():
+      if k in ["caps", "emotesandwords"]:
+        self.assertTrue(r.broken(v))
+      else:
+        self.assertFalse(r.broken(v))
+  
+class TestEmoteCount(unittest.TestCase):
   
   # sanitwitcher.rules.EmoteCount.count()
   def test_emote_count_count(self):

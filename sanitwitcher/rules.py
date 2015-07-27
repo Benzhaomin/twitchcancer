@@ -49,6 +49,19 @@ class MaximumMessageLength(Rule):
   def broken(self, message):
     return len(message.strip()) >= self.length
 
+# message must have a {ratio} of caps to characters maximum
+class CapsRatio(Rule):
+  
+  def __init__(self, ratio=0.2):
+    super().__init__()
+
+    self.ratio = ratio
+  
+  def broken(self, message):
+    ratio = len([c for c in message.strip() if c.isupper()]) / len(message.strip())
+
+    return ratio > self.ratio
+    
 # message can have {count} emotes maximum
 class EmoteCount(Rule):
  
