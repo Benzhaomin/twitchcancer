@@ -13,12 +13,14 @@ from sanitwitcher.sanitizer import Sanitizer
 
 sanitizer = Sanitizer()
 
+# we must check the actual server of the channel to support event channels
 def get_server_for_channel(channel):
   with urllib.request.urlopen('http://api.twitch.tv/api/channels/{0}/chat_properties'.format(channel)) as response:
      j = json.loads(response.read().decode())
      server_port = j['chat_servers'][0].split(':')
      return (server_port[0], int(server_port[1]))
-  
+
+# do something whenever a public message is received
 def on_pubmsg(message):
   if sanitizer.is_sane(message):
     print(message)
