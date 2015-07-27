@@ -38,6 +38,17 @@ class MinimumMessageLength(Rule):
   def broken(self, message):
     return len(message.strip()) < self.length
 
+# message must be a least {length} long
+class MaximumMessageLength(Rule):
+  
+  def __init__(self, length=160):
+    super().__init__()
+
+    self.length = length
+  
+  def broken(self, message):
+    return len(message.strip()) >= self.length
+
 # message can have {count} emotes maximum
 class EmoteCount(Rule):
  

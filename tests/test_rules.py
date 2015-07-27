@@ -12,6 +12,7 @@ messages = {
   'oneword': 'Elephant',
   'short': 'lol',
   'emotesandwords': 'THIS Kappa IS Kappa WHAT Kappa I Kappa CALL Kappa MUSIC',
+  'longsentence': 'this is a long sentence but so long that it\s too long this is a long sentence but so long that it\s too long this is a long sentence but so long that it\s too long',
 }
 
 class TestRule(unittest.TestCase):
@@ -36,7 +37,7 @@ class TestMinimumWordCount(unittest.TestCase):
     r = MinimumWordCount()
     
     for k,v in messages.items():
-      if k == "sentence" or k =="emotesandwords":
+      if k == "sentence" or k =="emotesandwords" or k =="longsentence":
         self.assertFalse(r.broken(v))
       else:
         self.assertTrue(r.broken(v))
@@ -53,6 +54,18 @@ class TestMinimumMessageLength(unittest.TestCase):
       else:
         self.assertFalse(r.broken(v))
 
+class TestMaximumMessageLength(unittest.TestCase):
+  
+  # sanitwitcher.rules.MaximumMessageLength.broken()
+  def test_maximum_message_length_broken(self):
+    r = MaximumMessageLength()
+    
+    for k,v in messages.items():
+      if k == "longsentence":
+        self.assertTrue(r.broken(v))
+      else:
+        self.assertFalse(r.broken(v))
+        
 class TestRulesEmoteCount(unittest.TestCase):
   
   # sanitwitcher.rules.EmoteCount.count()
