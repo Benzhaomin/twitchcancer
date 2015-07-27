@@ -11,7 +11,7 @@ logger = logging.getLogger('sanitwitcher.logger')
 class Client(irc.client.SimpleIRCClient):
   
   def __init__(self, config):
-    irc.client.SimpleIRCClient.__init__()
+    irc.client.SimpleIRCClient.__init__(self)
     
     self.config = config
     self.channel = None
