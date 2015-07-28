@@ -7,7 +7,7 @@ logger = logging.getLogger('twitchcancer.logger')
 
 from twitchcancer.symptoms import *
 
-class Cure:
+class Diagnosis:
   
   def __init__(self):
     super().__init__()
@@ -20,7 +20,7 @@ class Cure:
     # check if any of our symptoms are exhibited by the message
     for symptom in self.symptoms:
       if symptom.exhibited_by(message):
-        logger.debug('[cure] message %s broke the %s symptom', message.strip(), symptom)
+        logger.debug('[diagnosis] message %s broke the %s symptom', message.strip(), symptom)
         return False
     
     # all good, we have a sane message
@@ -29,7 +29,7 @@ class Cure:
 if __name__ == "__main__":  
   logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
   
-  s = Cure()
+  d = Diagnosis()
   
   count = 0
   sane = []
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     for line in destiny:
       count += 1
       
-      if s.is_sane(line):
+      if d.is_sane(line):
         sane.append(line)
         print(line.strip())
       else:

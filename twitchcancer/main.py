@@ -9,9 +9,9 @@ logger = logging.getLogger('twitchcancer.logger')
 
 from twitchcancer.config import config
 from twitchcancer.client import Client
-from twitchcancer.cure import Cure
+from twitchcancer.diagnosis import Diagnosis
 
-cure = Cure()
+diagnosis = Diagnosis()
 
 # we must check the actual server of the channel to support event channels
 def get_server_for_channel(channel):
@@ -22,7 +22,7 @@ def get_server_for_channel(channel):
 
 # do something whenever a public message is received
 def on_pubmsg(message):
-  if cure.is_sane(message):
+  if diagnosis.is_sane(message):
     print(message)
 
 if __name__ == "__main__":
