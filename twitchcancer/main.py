@@ -5,13 +5,13 @@ import argparse
 import urllib.request
 import json
 import logging
-logger = logging.getLogger('sanitwitcher.logger')
+logger = logging.getLogger('twitchcancer.logger')
 
-from sanitwitcher.config import config
-from sanitwitcher.client import Client
-from sanitwitcher.sanitizer import Sanitizer
+from twitchcancer.config import config
+from twitchcancer.client import Client
+from twitchcancer.cure import Cure
 
-sanitizer = Sanitizer()
+cure = Cure()
 
 # we must check the actual server of the channel to support event channels
 def get_server_for_channel(channel):
@@ -22,7 +22,7 @@ def get_server_for_channel(channel):
 
 # do something whenever a public message is received
 def on_pubmsg(message):
-  if sanitizer.is_sane(message):
+  if cure.is_sane(message):
     print(message)
 
 if __name__ == "__main__":
@@ -55,12 +55,3 @@ if __name__ == "__main__":
   c.call_on_pubmsg = on_pubmsg
   c.join(channel)
   c.start()
-
-# get channel from the command line
-# create a chat object with those settings
-# set the sanitizer too
-# run the chat
-## chat gets messages from the server, filters messages (logger.debug on filtered out messages)
-
-
-# sanitizer.py learning from chat logs (forsen etc)

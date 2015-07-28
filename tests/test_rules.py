@@ -3,7 +3,7 @@
 
 import unittest
 
-from sanitwitcher.rules import *
+from twitchcancer.rules import *
 
 messages = {
   'sentence': 'this is a long sentence but not too long',
@@ -18,12 +18,12 @@ messages = {
 
 class TestRule(unittest.TestCase):
   
-  # sanitwitcher.rules.Rule.__str__()
+  # twitchcancer.rules.Rule.__str__()
   # check that we get the class's name in the string representation
   def test_rule_str(self):
     self.assertEqual(str(Rule()), "Rule")
 
-  # sanitwitcher.rules.Rule.broken()
+  # twitchcancer.rules.Rule.broken()
   # check that the no-op Rule class allows everything
   def test_rule_broken(self):
     r = Rule()
@@ -33,7 +33,7 @@ class TestRule(unittest.TestCase):
 
 class TestMinimumWordCount(unittest.TestCase):
   
-  # sanitwitcher.rules.MinimumWordCount.broken()
+  # twitchcancer.rules.MinimumWordCount.broken()
   def test_minimum_word_count_broken(self):
     r = MinimumWordCount()
     
@@ -45,7 +45,7 @@ class TestMinimumWordCount(unittest.TestCase):
 
 class TestMinimumMessageLength(unittest.TestCase):
   
-  # sanitwitcher.rules.MinimumMessageLength.broken()
+  # twitchcancer.rules.MinimumMessageLength.broken()
   def test_minimum_message_length_broken(self):
     r = MinimumMessageLength()
     
@@ -57,7 +57,7 @@ class TestMinimumMessageLength(unittest.TestCase):
 
 class TestMaximumMessageLength(unittest.TestCase):
   
-  # sanitwitcher.rules.MaximumMessageLength.broken()
+  # twitchcancer.rules.MaximumMessageLength.broken()
   def test_maximum_message_length_broken(self):
     r = MaximumMessageLength()
     
@@ -70,7 +70,7 @@ class TestMaximumMessageLength(unittest.TestCase):
 # message must have a {ratio} of caps to characters maximum
 class TestCapsRatio(unittest.TestCase):
   
-  # sanitwitcher.rules.CapsRatio.broken()
+  # twitchcancer.rules.CapsRatio.broken()
   def test_caps_ratio_broken(self):
     r = CapsRatio()
     
@@ -82,13 +82,13 @@ class TestCapsRatio(unittest.TestCase):
   
 class TestEmoteCount(unittest.TestCase):
   
-  # sanitwitcher.rules.EmoteCount.count()
+  # twitchcancer.rules.EmoteCount.count()
   def test_emote_count_count(self):
     self.assertEqual(EmoteCount.count('Kappa'), 1)
     self.assertEqual(EmoteCount.count('notanemote'), 0) 
     self.assertEqual(EmoteCount.count('Kappa KappaPride Keepo'), 3) 
   
-  # sanitwitcher.rules.EmoteCount.broken()
+  # twitchcancer.rules.EmoteCount.broken()
   def test_emote_count_broken(self):
     r = EmoteCount()
     
@@ -100,7 +100,7 @@ class TestEmoteCount(unittest.TestCase):
     
 class TestEmoteRatio(unittest.TestCase):
   
-  # sanitwitcher.rules.EmoteRatio.broken()
+  # twitchcancer.rules.EmoteRatio.broken()
   def test_emote_ratio_broken(self):
     r = EmoteRatio()
     

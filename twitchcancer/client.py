@@ -5,7 +5,7 @@ import sys
 import irc.client
 import logging
 import itertools
-logger = logging.getLogger('sanitwitcher.logger')
+logger = logging.getLogger('twitchcancer.logger')
 # http://api.twitch.tv/api/channels/{channel}/chat_properties
 
 class Client(irc.client.SimpleIRCClient):

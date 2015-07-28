@@ -3,8 +3,8 @@
 
 import unittest
 
-from sanitwitcher.client import Client
+from twitchcancer.client import Client
 
-# sanitwitcher.client.Client.__init__()
+# twitchcancer.client.Client.__init__()
 class TestClientInit(unittest.TestCase):
   pass
