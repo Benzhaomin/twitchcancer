@@ -3,7 +3,7 @@
 
 import unittest
 
-from twitchcancer.symptoms import *
+from twitchcancer.symptom.symptoms import *
 
 messages = {
   'sentence': 'this is a long sentence but not too long',
@@ -18,12 +18,12 @@ messages = {
 
 class TestSymptom(unittest.TestCase):
   
-  # twitchcancer.symptoms.Symptom.__str__()
+  # twitchcancer.symptom.symptoms.Symptom.__str__()
   # check that we get the class's name in the string representation
   def test_rule_str(self):
     self.assertEqual(str(Symptom()), "Symptom")
 
-  # twitchcancer.symptoms.Symptom.exhibited_by()
+  # twitchcancer.symptom.symptoms.Symptom.exhibited_by()
   # check that the no-op Symptom class allows everything
   def test_rule_exhibited_by(self):
     s = Symptom()
@@ -33,7 +33,7 @@ class TestSymptom(unittest.TestCase):
 
 class TestMinimumWordCount(unittest.TestCase):
   
-  # twitchcancer.symptoms.MinimumWordCount.exhibited_by()
+  # twitchcancer.symptom.symptoms.MinimumWordCount.exhibited_by()
   def test_minimum_word_count_exhibited_by(self):
     s = MinimumWordCount()
     
@@ -45,7 +45,7 @@ class TestMinimumWordCount(unittest.TestCase):
 
 class TestMinimumMessageLength(unittest.TestCase):
   
-  # twitchcancer.symptoms.MinimumMessageLength.exhibited_by()
+  # twitchcancer.symptom.symptoms.MinimumMessageLength.exhibited_by()
   def test_minimum_message_length_exhibited_by(self):
     s = MinimumMessageLength()
     
@@ -57,7 +57,7 @@ class TestMinimumMessageLength(unittest.TestCase):
 
 class TestMaximumMessageLength(unittest.TestCase):
   
-  # twitchcancer.symptoms.MaximumMessageLength.exhibited_by()
+  # twitchcancer.symptom.symptoms.MaximumMessageLength.exhibited_by()
   def test_maximum_message_length_exhibited_by(self):
     s = MaximumMessageLength()
     
@@ -70,7 +70,7 @@ class TestMaximumMessageLength(unittest.TestCase):
 # message must have a {ratio} of caps to characters maximum
 class TestCapsRatio(unittest.TestCase):
   
-  # twitchcancer.symptoms.CapsRatio.exhibited_by()
+  # twitchcancer.symptom.symptoms.CapsRatio.exhibited_by()
   def test_caps_ratio_exhibited_by(self):
     s = CapsRatio()
     
@@ -82,13 +82,13 @@ class TestCapsRatio(unittest.TestCase):
   
 class TestEmoteCount(unittest.TestCase):
   
-  # twitchcancer.symptoms.EmoteCount.count()
+  # twitchcancer.symptom.symptoms.EmoteCount.count()
   def test_emote_count_count(self):
     self.assertEqual(EmoteCount.count('Kappa'), 1)
     self.assertEqual(EmoteCount.count('notanemote'), 0) 
     self.assertEqual(EmoteCount.count('Kappa KappaPride Keepo'), 3) 
   
-  # twitchcancer.symptoms.EmoteCount.exhibited_by()
+  # twitchcancer.symptom.symptoms.EmoteCount.exhibited_by()
   def test_emote_count_exhibited_by(self):
     s = EmoteCount()
     
@@ -100,7 +100,7 @@ class TestEmoteCount(unittest.TestCase):
     
 class TestEmoteRatio(unittest.TestCase):
   
-  # twitchcancer.symptoms.EmoteRatio.exhibited_by()
+  # twitchcancer.symptom.symptoms.EmoteRatio.exhibited_by()
   def test_emote_ratio_exhibited_by(self):
     s = EmoteRatio()
     

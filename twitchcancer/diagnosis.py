@@ -5,7 +5,7 @@ import argparse
 import logging
 logger = logging.getLogger('twitchcancer.logger')
 
-from twitchcancer.symptoms import *
+from twitchcancer.symptom.symptoms import *
 
 class Diagnosis:
   
@@ -25,6 +25,8 @@ class Diagnosis:
     
     # all good, we have a sane message
     return True
+
+  #def diagnose(self, 
 
 if __name__ == "__main__":  
   logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')

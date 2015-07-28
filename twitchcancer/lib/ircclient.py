@@ -6,9 +6,8 @@ import irc.client
 import logging
 import itertools
 logger = logging.getLogger('twitchcancer.logger')
-# http://api.twitch.tv/api/channels/{channel}/chat_properties
 
-class Client(irc.client.SimpleIRCClient):
+class IRCClient(irc.client.SimpleIRCClient):
   
   def __init__(self, config):
     irc.client.SimpleIRCClient.__init__(self)
@@ -37,17 +36,17 @@ class Client(irc.client.SimpleIRCClient):
 
   def on_welcome(self, connection, event):
     if irc.client.is_channel(self.channel):
-      logger.info('[chat]: welcome, joining %s', self.channel)
+      logger.info('[client]: welcome, joining %s', self.channel)
       connection.join(self.channel)
     else:
-      logger.info('[chat]: welcome but channel %s bot found', self.channel)
+      logger.info('[client]: welcome but channel %s bot found', self.channel)
       sys.exit(1)
   
   def on_join(self, connection, event):
-    logger.info('[chat]: joined %s', self.channel)
+    logger.info('[client]: joined %s', self.channel)
 
   def on_pubmsg(self, connection, event):
-    logger.info('[chat]: read %s', event.arguments)
+    logger.info('[client]: read %s', event.arguments)
     
     # forward the message to a callback if any
     do_nothing = lambda msg: None
