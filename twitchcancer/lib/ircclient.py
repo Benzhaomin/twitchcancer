@@ -36,17 +36,17 @@ class IRCClient(irc.client.SimpleIRCClient):
 
   def on_welcome(self, connection, event):
     if irc.client.is_channel(self.channel):
-      logger.info('[client]: welcome, joining %s', self.channel)
+      logger.debug('[client]: welcome, joining %s', self.channel)
       connection.join(self.channel)
     else:
-      logger.info('[client]: welcome but channel %s bot found', self.channel)
+      logger.debug('[client]: welcome but channel %s bot found', self.channel)
       sys.exit(1)
   
   def on_join(self, connection, event):
-    logger.info('[client]: joined %s', self.channel)
+    logger.debug('[client]: joined %s', self.channel)
 
   def on_pubmsg(self, connection, event):
-    logger.info('[client]: read %s', event.arguments)
+    logger.debug('[client]: read %s', event.arguments)
     
     # forward the message to a callback if any
     do_nothing = lambda msg: None
@@ -60,7 +60,7 @@ def debug_on_msg(msg):
   print(msg)
 
 if __name__ == "__main__":
-  logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+  logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
   
   config = {
     'server': 'irc.ca.us.mibbit.net',

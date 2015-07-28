@@ -16,7 +16,7 @@ class Twitch(IRC):
   # use the default config with a custom server/port depending on the channel
   def _get_irc_config(self):
     config = super()._get_irc_config()
-    config['server'], config['port'] = self.get_server(channel.strip('#'))
+    config['server'], config['port'] = self.get_server(self.channel.strip('#'))
     return config
 
   @classmethod
@@ -28,9 +28,9 @@ class Twitch(IRC):
        return (server_port[0], int(server_port[1]))
 
 if __name__ == "__main__":
-  logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
+  logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
   
   source = Twitch('#gamesdonequick')
   
   for m in source:
-    print(m)
+    pass

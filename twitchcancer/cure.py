@@ -3,12 +3,9 @@
 
 from twitchcancer.diagnosis import Diagnosis
 
-diagnosis = Diagnosis()
-
-class Cure:
-
-  def cure_channel(channel):
-    pass
+def cure(source):
+  diagnosis = Diagnosis()
   
-  def cure_log(log):
-    pass
+  for message in source:
+    if diagnosis.diagnose(message) == []:
+      print(message)

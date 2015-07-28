@@ -84,7 +84,7 @@ class EmoteCount(Symptom):
 # message must have a {ratio} of emotes vs words maximum
 class EmoteRatio(Symptom):
   
-  def __init__(self, ratio=0.5):
+  def __init__(self, ratio=0.49):
     super().__init__()
 
     self.ratio = ratio
