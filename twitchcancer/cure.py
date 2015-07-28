@@ -5,22 +5,22 @@ import argparse
 import logging
 logger = logging.getLogger('twitchcancer.logger')
 
-from twitchcancer.rules import *
+from twitchcancer.symptoms import *
 
 class Cure:
   
   def __init__(self):
     super().__init__()
     
-    self.rules = [MinimumWordCount(), MinimumMessageLength(), MaximumMessageLength(), CapsRatio(), EmoteCount(), EmoteRatio()]
+    self.symptoms = [MinimumWordCount(), MinimumMessageLength(), MaximumMessageLength(), CapsRatio(), EmoteCount(), EmoteRatio()]
   
   # tells whether a message looks sane based on all sorts of factors
   def is_sane(self, message):
     
-    # check if any of our rules are broken
-    for rule in self.rules:
-      if rule.broken(message):
-        logger.debug('[cure] message %s broke the %s rule', message.strip(), rule)
+    # check if any of our symptoms are exhibited by the message
+    for symptom in self.symptoms:
+      if symptom.exhibited_by(message):
+        logger.debug('[cure] message %s broke the %s symptom', message.strip(), symptom)
         return False
     
     # all good, we have a sane message

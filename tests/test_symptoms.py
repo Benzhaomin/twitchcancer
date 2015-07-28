@@ -3,7 +3,7 @@
 
 import unittest
 
-from twitchcancer.rules import *
+from twitchcancer.symptoms import *
 
 messages = {
   'sentence': 'this is a long sentence but not too long',
@@ -16,96 +16,96 @@ messages = {
   'caps': 'THATS A LOT OF Caps',
 }
 
-class TestRule(unittest.TestCase):
+class TestSymptom(unittest.TestCase):
   
-  # twitchcancer.rules.Rule.__str__()
+  # twitchcancer.symptoms.Symptom.__str__()
   # check that we get the class's name in the string representation
   def test_rule_str(self):
-    self.assertEqual(str(Rule()), "Rule")
+    self.assertEqual(str(Symptom()), "Symptom")
 
-  # twitchcancer.rules.Rule.broken()
-  # check that the no-op Rule class allows everything
-  def test_rule_broken(self):
-    r = Rule()
+  # twitchcancer.symptoms.Symptom.exhibited_by()
+  # check that the no-op Symptom class allows everything
+  def test_rule_exhibited_by(self):
+    s = Symptom()
     
     for m in messages:
-      self.assertFalse(r.broken(m))
+      self.assertFalse(s.exhibited_by(m))
 
 class TestMinimumWordCount(unittest.TestCase):
   
-  # twitchcancer.rules.MinimumWordCount.broken()
-  def test_minimum_word_count_broken(self):
-    r = MinimumWordCount()
+  # twitchcancer.symptoms.MinimumWordCount.exhibited_by()
+  def test_minimum_word_count_exhibited_by(self):
+    s = MinimumWordCount()
     
     for k,v in messages.items():
       if k in ["sentence", "emotesandwords", "longsentence", "caps"]:
-        self.assertFalse(r.broken(v))
+        self.assertFalse(s.exhibited_by(v))
       else:
-        self.assertTrue(r.broken(v))
+        self.assertTrue(s.exhibited_by(v))
 
 class TestMinimumMessageLength(unittest.TestCase):
   
-  # twitchcancer.rules.MinimumMessageLength.broken()
-  def test_minimum_message_length_broken(self):
-    r = MinimumMessageLength()
+  # twitchcancer.symptoms.MinimumMessageLength.exhibited_by()
+  def test_minimum_message_length_exhibited_by(self):
+    s = MinimumMessageLength()
     
     for k,v in messages.items():
       if k == "onechar":
-        self.assertTrue(r.broken(v))
+        self.assertTrue(s.exhibited_by(v))
       else:
-        self.assertFalse(r.broken(v))
+        self.assertFalse(s.exhibited_by(v))
 
 class TestMaximumMessageLength(unittest.TestCase):
   
-  # twitchcancer.rules.MaximumMessageLength.broken()
-  def test_maximum_message_length_broken(self):
-    r = MaximumMessageLength()
+  # twitchcancer.symptoms.MaximumMessageLength.exhibited_by()
+  def test_maximum_message_length_exhibited_by(self):
+    s = MaximumMessageLength()
     
     for k,v in messages.items():
       if k == "longsentence":
-        self.assertTrue(r.broken(v))
+        self.assertTrue(s.exhibited_by(v))
       else:
-        self.assertFalse(r.broken(v))
+        self.assertFalse(s.exhibited_by(v))
 
 # message must have a {ratio} of caps to characters maximum
 class TestCapsRatio(unittest.TestCase):
   
-  # twitchcancer.rules.CapsRatio.broken()
-  def test_caps_ratio_broken(self):
-    r = CapsRatio()
+  # twitchcancer.symptoms.CapsRatio.exhibited_by()
+  def test_caps_ratio_exhibited_by(self):
+    s = CapsRatio()
     
     for k,v in messages.items():
       if k in ["caps", "emotesandwords"]:
-        self.assertTrue(r.broken(v))
+        self.assertTrue(s.exhibited_by(v))
       else:
-        self.assertFalse(r.broken(v))
+        self.assertFalse(s.exhibited_by(v))
   
 class TestEmoteCount(unittest.TestCase):
   
-  # twitchcancer.rules.EmoteCount.count()
+  # twitchcancer.symptoms.EmoteCount.count()
   def test_emote_count_count(self):
     self.assertEqual(EmoteCount.count('Kappa'), 1)
     self.assertEqual(EmoteCount.count('notanemote'), 0) 
     self.assertEqual(EmoteCount.count('Kappa KappaPride Keepo'), 3) 
   
-  # twitchcancer.rules.EmoteCount.broken()
-  def test_emote_count_broken(self):
-    r = EmoteCount()
+  # twitchcancer.symptoms.EmoteCount.exhibited_by()
+  def test_emote_count_exhibited_by(self):
+    s = EmoteCount()
     
     for k,v in messages.items():
       if k == "emotesandwords":
-        self.assertTrue(r.broken(v))
+        self.assertTrue(s.exhibited_by(v))
       else:
-        self.assertFalse(r.broken(v))
+        self.assertFalse(s.exhibited_by(v))
     
 class TestEmoteRatio(unittest.TestCase):
   
-  # twitchcancer.rules.EmoteRatio.broken()
-  def test_emote_ratio_broken(self):
-    r = EmoteRatio()
+  # twitchcancer.symptoms.EmoteRatio.exhibited_by()
+  def test_emote_ratio_exhibited_by(self):
+    s = EmoteRatio()
     
     for k,v in messages.items():
       if k == "oneemote":
-        self.assertTrue(r.broken(v))
+        self.assertTrue(s.exhibited_by(v))
       else:
-        self.assertFalse(r.broken(v))
+        self.assertFalse(s.exhibited_by(v))

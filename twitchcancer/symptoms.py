@@ -3,8 +3,8 @@
 
 import os
 
-# no-op Rule
-class Rule:
+# no-op Symptom
+class Symptom:
   
   def __init__(self):
     super().__init__()
@@ -13,57 +13,57 @@ class Rule:
     return type(self).__name__
   
   # tells whether a message respects the rule
-  def broken(self, message):
+  def exhibited_by(self, message):
     return False
 
 # message must have a minimum of {count} words
-class MinimumWordCount(Rule):
+class MinimumWordCount(Symptom):
   
   def __init__(self, count=2):
     super().__init__()
 
     self.count = count
   
-  def broken(self, message):
+  def exhibited_by(self, message):
     return len(message.strip().split()) < self.count
   
 # message must be a least {length} long
-class MinimumMessageLength(Rule):
+class MinimumMessageLength(Symptom):
   
   def __init__(self, length=2):
     super().__init__()
 
     self.length = length
   
-  def broken(self, message):
+  def exhibited_by(self, message):
     return len(message.strip()) < self.length
 
 # message must be a least {length} long
-class MaximumMessageLength(Rule):
+class MaximumMessageLength(Symptom):
   
   def __init__(self, length=160):
     super().__init__()
 
     self.length = length
   
-  def broken(self, message):
+  def exhibited_by(self, message):
     return len(message.strip()) >= self.length
 
 # message must have a {ratio} of caps to characters maximum
-class CapsRatio(Rule):
+class CapsRatio(Symptom):
   
   def __init__(self, ratio=0.2):
     super().__init__()
 
     self.ratio = ratio
   
-  def broken(self, message):
+  def exhibited_by(self, message):
     ratio = len([c for c in message.strip() if c.isupper()]) / len(message.strip())
 
     return ratio > self.ratio
     
 # message can have {count} emotes maximum
-class EmoteCount(Rule):
+class EmoteCount(Symptom):
  
   def __init__(self, count=3):
     super().__init__()
@@ -78,18 +78,18 @@ class EmoteCount(Rule):
   def count(cls, message):
     return len([word for word in message.strip().split() if word in EmoteCount.emotes])
 
-  def broken(self, message):    
+  def exhibited_by(self, message):    
     return self.count(message) > self._count
 
 # message must have a {ratio} of emotes vs words maximum
-class EmoteRatio(Rule):
+class EmoteRatio(Symptom):
   
   def __init__(self, ratio=0.5):
     super().__init__()
 
     self.ratio = ratio
     
-  def broken(self, message):
+  def exhibited_by(self, message):
     ratio = EmoteCount.count(message) / len(message.strip().split())
     
     return ratio > self.ratio
