@@ -16,7 +16,7 @@ class Log(Source):
   
   def __iter__(self):
     for message in self.messages:
-      yield message
+      yield message.strip()
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
