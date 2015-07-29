@@ -93,3 +93,36 @@ class EmoteRatio(Symptom):
     ratio = EmoteCount.count(message) / len(message.strip().split())
     
     return ratio > self.ratio
+
+# message can't contain any of the banned phrases
+class BannedPhrase(Symptom):
+ 
+  def __init__(self):
+    super().__init__()
+  
+  # class variable: load a list of all the banned phrases
+  with open(os.path.join(os.path.dirname(__file__), 'banned.txt')) as banned_file:
+    banned = banned_file.read().splitlines() 
+  
+  def exhibited_by(self, message):
+    for phrase in BannedPhrase.banned:
+      if phrase in message:
+        return True
+    return False
+
+# message can't be a single word echoing too often
+class EchoingRatio(Symptom):
+ 
+  def __init__(self, ratio=1):
+    super().__init__()
+    
+    self.ratio = ratio
+  
+  def exhibited_by(self, message):
+    words = message.split()
+    
+    # a single word can't be echoing
+    if len(words) == 1:
+      return False
+    
+    return len(set(words)) / len(words) < self.ratio

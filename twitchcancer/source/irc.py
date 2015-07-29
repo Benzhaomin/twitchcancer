@@ -52,7 +52,9 @@ class IRC(Source):
   # add messages we received to the queue
   # called from the client thread
   def _on_pubmsg(self, message):
-    self.messages.put(message)
+    message = message.strip()
+    if len(message) > 0:
+      self.messages.put(message)
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
