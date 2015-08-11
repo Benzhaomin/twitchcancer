@@ -8,6 +8,7 @@ logger = logging.getLogger('twitchcancer.logger')
 
 import twitchcancer.cure
 import twitchcancer.monitor
+import twitchcancer.history
 from twitchcancer.diagnosis import Diagnosis
 from twitchcancer.source.twitch import Twitch
 from twitchcancer.source.log import Log
@@ -34,6 +35,9 @@ def monitor(args):
   sources = [_get_source(channel) for channel in args.channel]
   twitchcancer.monitor.monitor(sources)
 
+def history(args):
+  twitchcancer.history.history(args)
+
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
 
@@ -50,9 +54,14 @@ if __name__ == "__main__":
   parser_cure.add_argument('channel', nargs='?', help='#channel name', default=None)
   parser_cure.set_defaults(func=cure)
 
-  parser_cure = subparsers.add_parser('monitor', help='monitor one or more channels')
-  parser_cure.add_argument('channel', nargs='*', help='#channel names', default=None)
-  parser_cure.set_defaults(func=monitor)
+  parser_monitor = subparsers.add_parser('monitor', help='monitor one or more channels')
+  parser_monitor.add_argument('channel', nargs='*', help='#channel names', default=None)
+  parser_monitor.set_defaults(func=monitor)
+
+  parser_history = subparsers.add_parser('history', help='runs the history API')
+  parser_history.add_argument("--host", dest="host", default="localhost", help="hostname or ip address (default: localhost)")
+  parser_history.add_argument("--port", dest="port", default=8080, help="port number  (default: 8080)")
+  parser_history.set_defaults(func=history)
 
   args = parser.parse_args()
 
