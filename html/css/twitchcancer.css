@@ -1,0 +1,200 @@
+.clearfix:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    background-color: #eee;
+    background-size: 20px 20px;
+    min-height: 100%;
+    color: white;
+    font-size: 12px;
+}
+body {
+    margin: 0 auto;
+    padding: 0;
+    max-width: 100%;
+    position: relative;
+    width: 320px;
+}
+
+h1, h2, h3, h4, h5, h6, ul {
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+}
+li, p {
+    margin: 0;
+    padding: 0;
+}
+a {
+    text-decoration: none;
+    color: inherit;
+    outline: 0 none;
+}
+
+input[type='search'] {
+    width: 100%;
+    border: 0;
+    padding: 10px;
+    box-sizing: border-box;
+    color: black;
+    min-width: 500px;
+}
+input[type='submit'] {
+    background: none;
+    border: 0 none;
+    padding: 0;
+}
+
+ul.commands {
+    position: absolute;
+    right: 0;
+    top: 0;
+    line-height: 34px;
+    list-style-type: none;
+}
+ul.commands li {
+    display: inline;
+    color: black;
+    padding: 0px 10px;
+    border-left: 1px solid #ccc;
+}
+
+/* graph */
+.axis path,
+.axis line {
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.title {
+    font-size: 16px;
+    z-index: 10000;
+    position: relative;
+}
+.cancer {
+    fill: #F9105E;
+}
+/*.cancer:hover {
+    fill: #FA327F;
+}*/
+.sane {
+    fill: #07A86D;
+}
+/*.sane:hover {
+    fill: #05864B;
+}*/
+
+.point {
+    opacity: 0.2;
+    fill: lightgrey;
+}
+.point:hover {
+    opacity: 0.8;
+}
+
+/* tooltips */
+.qtip-default {
+    color: #333;
+    background-color: #FFF;
+    border: 1px solid #CCC;
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+}
+.qtip-default .qtip-titlebar {
+    background-color: #e2e2e2;
+}
+
+/* grid system */
+body {
+    width: 320px;
+}
+.grid {
+
+}
+.grid-item {
+    width: 320px;
+    height: 177px;
+}
+.grid-item.size-big {
+    width: 320px;
+    height: 177px;
+}
+/* 2 columns. normal size */
+@media screen and (min-width: 640px) {
+    body {
+        width: 640px;
+    }
+    .grid-item.size-big {
+        width: 640px;
+        height: 344px;
+    }
+}
+/* 3 columns. normal size */
+@media screen and (min-width: 960px) {
+    body {
+        width: 960px;
+    }
+    .grid-item.size-big {
+        width: 960px;
+        height: 533px;
+    }
+}
+/* 4 columns. normal size */
+@media screen and (min-width: 1281px) {
+    body {
+        width: 1280px;
+    }
+    .grid-item.size-big {
+        width: 640px;
+        height: 344px;
+    }
+}
+/* 4 columns. a bit wider */
+@media screen and (min-width: 1601px) {
+    body {
+        width: 1600px;
+    }
+    .grid-item {
+        width: 400px;
+        height: 222px;
+    }
+    .grid-item.size-big {
+        width: 800px;
+        height: 444px;
+    }
+}
+/* 4 columns. a bit wider than wider */
+@media screen and (min-width: 1921px) {
+    body {
+        width: 1920px;
+    }
+    .grid-item {
+        width: 480px;
+        height: 267px;
+    }
+    .grid-item.size-big {
+        width: 960px;
+        height: 534px;
+    }
+}
+
+/* results */
+#results {
+    text-align: center;
+}
+#results > * {
+    text-align: left;
+}
+
+#results .error {
+    text-align: center;
+    padding: 30px 0px;
+}
