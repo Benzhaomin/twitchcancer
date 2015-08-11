@@ -3,13 +3,11 @@
 
 from threading import Thread
 from queue import Queue
-import datetime
 import logging
 logger = logging.getLogger('twitchcancer.logger')
 
-from pymongo import MongoClient
-
 from twitchcancer.diagnosis import Diagnosis
+from twitchcancer.storage import Storage
 
 # worker thread
 def _monitor_one(source, queue):
@@ -27,22 +25,13 @@ def monitor(sources):
     t.daemon = True
     t.start()
 
-  # create db connection
-  client = MongoClient()
-  db = client.twitchcancer
+  storage = Storage()
 
   try:
     while True:
       (channel, cancer) = queue.get()
 
-      message = {
-        'channel': channel,
-        'cancer': cancer,
-        'date': datetime.datetime.utcnow()
-      }
-
-      db.messages.insert_one(message)
-      logger.info('[monitor] %s %s', message['channel'], message['cancer'])
+      storage.store(channel, cancer)
   except KeyboardInterrupt:
     # flush db to disk
     pass
