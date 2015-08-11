@@ -7,6 +7,8 @@ import datetime
 import logging
 logger = logging.getLogger('twitchcancer.logger')
 
+from pymongo import MongoClient
+
 from twitchcancer.diagnosis import Diagnosis
 
 # worker thread
@@ -26,6 +28,8 @@ def monitor(sources):
     t.start()
 
   # create db connection
+  client = MongoClient()
+  db = client.twitchcancer
 
   try:
     while True:
@@ -37,7 +41,7 @@ def monitor(sources):
         'date': datetime.datetime.utcnow()
       }
 
-      #db.messages.insert_one(message)
+      db.messages.insert_one(message)
       logger.info('[monitor] %s %s', message['channel'], message['cancer'])
   except KeyboardInterrupt:
     # flush db to disk
