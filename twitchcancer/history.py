@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import datetime
 import logging
 logger = logging.getLogger('twitchcancer.logger')
 
@@ -30,6 +31,33 @@ def message(channel):
   history = storage.history({'query': query, 'interval': interval})
 
   return {'history': history}
+
+# returns cancer level of
+@app.route(path="/cancer/<channels>", method="GET")
+def cancer(channels):
+  try:
+    horizon = int(request.query.horizon)
+  except:
+    horizon = 60
+
+  stats = []
+
+  for channel in channels.split('|'):
+    query = {
+      "channel": '#'+channel,
+      "date": { "$gt" : datetime.datetime.utcnow() - datetime.timedelta(minutes=horizon) }
+    }
+    history = storage.history({'query': query, 'interval': horizon})
+
+    # compute a global cancer level on the period
+    try:
+      cancer = sum([list(x.values())[0]['cancer'] for x in history]) / sum([list(x.values())[0]['total'] for x in history])
+    except ZeroDivisionError:
+      cancer = 0
+
+    stats.append({channel: cancer})
+
+  return {'channels': stats}
 
 def history(args):
   run(app, host=args.host, port=int(args.port)) #, debug=(numeric_level==logging.DEBUG)

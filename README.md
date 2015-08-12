@@ -36,12 +36,13 @@ Long-running process used to record historical data on cancer level of several c
 
 `python twitchcancer/main.py monitor gamesdonequick forsenlol`
 
-### History
+### HTTP API
 
-JSON API exposing historical records of cancer per channel.
+JSON API exposing historical records and live level of cancer per channel.
 
 - run: `python twitchcancer/main.py history`
 - query: `curl 'http://localhost:8080/history/summit1g?interval=60'
+- query: `curl 'http://localhost:8080/cancer/summit1g?horizon=60'
 
 # License
 
