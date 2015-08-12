@@ -1,8 +1,12 @@
 <div class="jumbotron">
-  <h1>'Allo, 'Allo!</h1>
-
-  <span ng-repeat="point in history">
-    {{point}}
+  <span dropdown>
+    <a href id="simple-dropdown" dropdown-toggle>
+      Click me for a dropdown, yo!
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="simple-dropdown">
+      <li ng-repeat="point in history">
+        <a>{{point}}</a>
+      </li>
+    </ul>
   </span>
-
 </div>
