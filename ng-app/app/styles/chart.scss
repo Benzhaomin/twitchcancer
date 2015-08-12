@@ -1,0 +1,17 @@
+.chart {
+  background: #eee;
+  padding: 3px;
+
+  div {
+    width: 0;
+    transition: all 1s ease-out;
+
+    font: 12px sans-serif;
+    background-color: steelblue;
+    text-align: right;
+    padding: 3px;
+    margin: 5px;
+    color: white;
+    box-shadow: 2px 2px 2px #666;
+  }
+}
