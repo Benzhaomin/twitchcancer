@@ -2,16 +2,11 @@
 
 /**
  * @ngdoc function
- * @name appApp.controller:MainCtrl
+ * @name twitchcancer.controller:MainCtrl
  * @description
  * # MainCtrl
- * Controller of the appApp
+ * Controller of the main view
  */
-angular.module('appApp')
+angular.module('twitchcancer')
   .controller('MainCtrl', function () {
-    this.awesomeThings = [
-      'HTML5 Boilerplate',
-      'AngularJS',
-      'Karma'
-    ];
   });

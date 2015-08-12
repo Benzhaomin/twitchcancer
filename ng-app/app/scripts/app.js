@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc overview
- * @name appApp
+ * @name twitchcancer
  * @description
- * # appApp
+ * # Live monitoring of Twitch chats cancer level via web-sockets.
  *
  * Main module of the application.
  */
 angular
-  .module('appApp', [
+  .module('twitchcancer', [
     'ngAnimate',
     'ngCookies',
     'ngMessages',
