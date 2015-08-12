@@ -9,7 +9,7 @@
  * Main module of the application.
  */
 angular
-  .module('twitchcancer', [
+  .module('twitchCancer', [
     'ngAnimate',
     'ngCookies',
     'ngMessages',
