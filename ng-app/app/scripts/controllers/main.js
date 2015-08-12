@@ -9,32 +9,19 @@
  */
 angular.module('twitchCancer')
   .controller('MainCtrl', function ($scope, $http, $interval) {
-    $scope.history = [];
-
-    /*$http.get('http://localhost:8080/history/forsenlol').success(function(data) {
-      $scope.history = transform(data.history);
-    });*/
+    $scope.cancer = [];
 
     $interval(function() {
-      $scope.history = [
-        {'key': 'a', 'value': Math.round(Math.random()*10+20) },
-        {'key': 'b', 'value': Math.round(Math.random()*8+10) },
-        {'key': 'c', 'value': Math.round(Math.random()*30+69) }
-      ];
-    }, 1000);
+      $http.get('http://localhost:8080/cancer/forsenlol|amazhs|massansc|savjz?horizon=1').success(function(data) {
+        $scope.cancer = data.channels.map(function(channel) {
+          return Object.keys(channel).map(function(name) {
+            return {'key': name, 'value': Math.round(channel[name]*100*100) / 100};
+          })[0];
+        });
+      });
+    }, 5000);
 
-    function transform(json) {
-      var data = [];
-
-      for (var index in json) {
-        var obj = json[index];
-        var time = Object.keys(obj).pop();
-        var point = {'date': time, 'cancer': obj[time]['cancer'], 'total': obj[time]['total']};
-        data.push(point);
-      }
-
-      return data;
-    }
+    // {"channels": [{"amazhs": 0.8132028625675478}]}
   })
   .directive('barsChart', function () {
     return {
@@ -45,6 +32,8 @@ angular.module('twitchCancer')
         var chart = d3.select(element[0]).append("div").attr("class", "chart");
 
         scope.$watch('data', function() {
+
+          //console.log(scope.data);
           var div = chart.selectAll('div')
             .data(scope.data);
 
