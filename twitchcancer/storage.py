@@ -6,6 +6,7 @@ import logging
 logger = logging.getLogger('twitchcancer.logger')
 
 from bson.code import Code
+from bson.objectid import ObjectId
 from pymongo import MongoClient
 
 # use MongoDB straight up
@@ -20,8 +21,7 @@ class Storage:
   def store(self, channel, cancer):
     message = {
       'channel': channel,
-      'cancer': cancer,
-      'date': datetime.datetime.utcnow()
+      'cancer': cancer
     }
 
     self.db.messages.insert_one(message)
@@ -31,9 +31,15 @@ class Storage:
     query = parameters['query']
     interval = parameters['interval']
 
+    # apply date comparison using the object ID instead of a date field
+    if 'date' in query:
+      query['date']['$gt'] = ObjectId.from_datetime(query['date']['$gt'])
+      query['_id'] = query['date']
+      del query['date']
+
     map_js = Code("function() {"
                   "  var coeff = 1000 * 60 * " + str(interval) + "; "
-                  "  var roundTime = new Date(Math.floor(this.date.getTime() / coeff) * coeff);"
+                  "  var roundTime = new Date(Math.floor(this._id.getTimestamp() / coeff) * coeff);"
                   "  emit(roundTime, { cancer: (this.cancer ? 1 : 0), total: 1 });"
                   "};")
 
