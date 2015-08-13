@@ -17,8 +17,13 @@ class IRC(Source):
     super().__init__()
 
     # irc channel to join
+    if not channel.startswith('#'):
+      channel = '#' + channel
     self.channel = channel
+    self.messages = None
 
+  # initialize runtime things when we actually need to
+  def __lazy_init__(self):
     # queue used to hold messages coming from the producer (IRC client) and going into our consumer
     self.messages = queue.Queue()
 
@@ -26,6 +31,8 @@ class IRC(Source):
     t = threading.Thread(target=self._client_thread)
     t.daemon = True
     t.start()
+
+    logger.debug('[irc] started a client thread for %s', self.channel);
 
   # we are iterable
   def __iter__(self):
@@ -39,6 +46,10 @@ class IRC(Source):
   def __next__(self):
     try:
       return self.messages.get()
+    # raised when messages is None, when __init__ ran but not __lazy_init__
+    except AttributeError:
+      self.__lazy_init__()
+      return self.__next__()
     except KeyboardInterrupt:
       raise StopIteration
 
