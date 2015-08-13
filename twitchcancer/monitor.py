@@ -40,6 +40,8 @@ class Sleeper():
 
         logger.info("[monitor] Cycle ran with %s sources running", len(self.sources))
 
+        # TODO: merge older data with a group by 5 minutes interval kind of thing
+
         # wait until our next cycle
         time.sleep(60)
     except KeyboardInterrupt:
