@@ -10,5 +10,11 @@ class Source:
   def __iter__(self):
     return self
 
+  def __eq__(self, other):
+    return self.name() == other.name()
+
+  def __neq__(self, other):
+    return self.name() != other.name()
+
   def name(self):
     return id(self)
