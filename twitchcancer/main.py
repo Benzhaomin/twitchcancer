@@ -15,8 +15,6 @@ from twitchcancer.source.log import Log
 
 def _get_source(channel):
   if channel:
-    if not channel.startswith('#'):
-      channel = '#' + channel
     source = Twitch(channel)
   else:
     source = Log(sys.stdin.readlines())
