@@ -43,6 +43,7 @@ JSON API exposing historical records and live level of cancer.
 - run: `python twitchcancer/main.py history`
 - query: `curl 'http://localhost:8080/history/summit1g'
 - query: `curl 'http://localhost:8080/live'
+- query: `curl 'http://localhost:8080/leaderboards'
 
 # License
 

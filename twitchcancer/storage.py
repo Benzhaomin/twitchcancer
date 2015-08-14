@@ -145,6 +145,82 @@ class Storage:
 
     return [self._point_from_aggregate(c) for c in result]
 
+  def leaderboard(self, what, per):
+    result = None
+
+    try:
+      field = {
+        'cancer': '$value.cancer',
+        'messages': '$value.messages',
+        'cpm': {'$divide': ["$value.cancer", "$value.messages"]},
+      }[what]
+
+      operator = {
+        'total': '$sum',
+        'average': '$avg',
+        'minute': '$max',
+      }[per]
+    except KeyError:
+      return []
+
+    if operator == '$max':
+      result = self._leaderboard_maximum(field, operator)
+    else:
+      result = self._leaderboard_aggregate(field, operator)
+
+    return result
+
+  def _leaderboard_maximum(self, field, operator):
+    pipeline = [{
+      "$sort": {
+        "value.cancer": -1,
+        "value.messages": -1,
+      }
+    }, {
+      "$group": {
+        "_id": "$_id.channel",
+        "date": {"$first": "$_id.date"},
+        "value": {operator: field},
+      }
+    }, {
+      "$sort": {
+        "value": -1
+      }
+    }, {
+      "$limit": 10
+    }]
+
+    result = self.db.history.aggregate(pipeline)
+
+    return [{
+      'channel': r["_id"],
+      'date': str(r["date"]),
+      'value': int(r["value"])
+    } for r in result]
+
+  def _leaderboard_aggregate(self, field, operator):
+    pipeline = [{
+      "$group": {
+        "_id": "$_id.channel",
+        "date": {"$first": "$_id.date"},
+        "value": {operator: field},
+      }
+    }, {
+      "$sort": {
+        "value": -1
+      }
+    }, {
+      "$limit": 10
+    }]
+
+    result = self.db.history.aggregate(pipeline)
+
+    return [{
+      'channel': r["_id"],
+      'date': str(r["date"]),
+      'value': int(r["value"])
+    } for r in result]
+
 import time
 
 if __name__ == "__main__":

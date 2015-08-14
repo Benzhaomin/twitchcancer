@@ -33,5 +33,21 @@ def cancer():
 
   return {'channels': result}
 
+# returns all-time leaderboards
+@app.route(path="/leaderboards", method="GET")
+def leaderboards():
+  metrics = ['cancer', 'messages', 'cpm']
+  intervals = ['minute', 'average', 'total']
+
+  result = {}
+
+  for metric in metrics:
+    result[metric] = {}
+
+    for interval in intervals:
+      result[metric][interval] = storage.leaderboard(metric, interval)
+
+  return result
+
 def history(args):
   run(app, host=args.host, port=int(args.port)) #, debug=(numeric_level==logging.DEBUG)
