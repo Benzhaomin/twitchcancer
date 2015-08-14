@@ -1,0 +1,12 @@
+<table class="table table-condensed">
+  <tr>
+    <th>Channel</th>
+    <th>Score</th>
+    <th>Date</th>
+  <tr>
+  <tr ng-repeat='record in records track by record.channel'>
+    <td>{{ record.channel }}</td>
+    <td>{{ record.value }}</td>
+    <td>{{ record.date }}</td>
+  </tr>
+</table>
