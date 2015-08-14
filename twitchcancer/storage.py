@@ -9,50 +9,147 @@ from bson.code import Code
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 
+import twitchcancer.cron
+
+'''
+  Schema
+
+  messages {
+    channel: "#channel",
+    cancer: cancer points,
+  }
+
+  history {
+    '_id': {
+      date: beginning of the period,
+      channel: "#channel",
+    },
+    'values': {
+      cancer: cancer points,
+      messages: message count
+    }
+  }
+
+'''
 # use MongoDB straight up
 class Storage:
 
-  def __init__(self):
+  def __init__(self, cron=False):
     super().__init__()
 
     client = MongoClient()
     self.db = client.twitchcancer
+    self.cron = None
 
-  def store(self, channel, cancer):
-    message = {
-      'channel': channel,
-      'cancer': cancer
-    }
+    # archive old messages every 5 minutes
+    if cron:
+      self.cron = twitchcancer.cron.Cron()
+      self.cron.add(call=self._archive, interval=5)
+      self.cron.start()
 
-    self.db.messages.insert_one(message)
-    logger.debug('[storage] inserting %s %s', message['channel'], message['cancer'])
+  # consolidate and archive db.messages data into db.history
+  def _archive(self):
+    now = datetime.datetime.now(datetime.timezone.utc)
+    logger.debug('[storage] archive started at %s', now)
 
-  def history(self, parameters):
-    query = parameters['query']
-    interval = parameters['interval']
+    # only archive messages that are too old
+    query = { '_id': {'$lte': self._live_message_objectId() } }
 
-    # apply date comparison using the object ID instead of a date field
-    if 'date' in query:
-      query['date']['$gt'] = ObjectId.from_datetime(query['date']['$gt'])
-      query['_id'] = query['date']
-      del query['date']
-
+    # map_reduce messages into { '_id': date, channel, 'values': cancer, messages }
     map_js = Code("function() {"
-                  "  var coeff = 1000 * 60 * " + str(interval) + "; "
+                  "  var coeff = 1000 * 60 * 5; "
                   "  var roundTime = new Date(Math.floor(this._id.getTimestamp() / coeff) * coeff);"
-                  "  emit(roundTime, { cancer: (this.cancer ? 1 : 0), total: 1 });"
+                  "  var key = { 'channel': this.channel, 'date': roundTime };"
+                  "  emit(key, { cancer: this.cancer, messages: 1 });"
                   "};")
 
     reduce_js = Code( "function(key, values) {"
-                      "  var result = { cancer: 0, total: 0};"
+                      "  var result = { cancer: 0, messages: 0};"
                       "  values.forEach(function(object) {"
                       "    result.cancer += object.cancer;"
-                      "    result.total += object.total;"
+                      "    result.messages += object.messages;"
                       "  });"
                       "  return result;"
                       "};")
 
-    result = self.db.messages.map_reduce(map_js, reduce_js, "intervalled", query=query)
-    logger.debug('[storage] retrieved history for %s with a %s minutes interval', query['channel'], interval)
+    # db.messages -> m/r (merge) -> db.history
+    self.db.messages.map_reduce(map_js, reduce_js, {'merge': 'history'}, query=query)
 
-    return [{str(m['_id']): m['value']} for m in result.find()]
+    # delete archived messages
+    self.db.messages.delete_many(query)
+
+    logger.debug('[storage] archive finished at %s', datetime.datetime.now(datetime.timezone.utc))
+
+  # returns a JSON data point object from a db.history record
+  def _point_from_history(self, history):
+    return {
+    #  'channel': history['_id']['channel'],
+      'date': str(history['_id']['date']),
+      'cancer': history['value']['cancer'],
+      'messages': int(history['value']['messages'])
+    }
+
+  # returns a JSON data point from an aggregated db.message record
+  def _point_from_aggregate(self, message):
+    return {
+      'channel': message['_id'],
+    #  'date': str(self._live_message_breakpoint()),
+      'cancer': message['cancer'],
+      'messages': message['messages'],
+    }
+
+  # returns the datetime where live and archived messages split
+  def _live_message_breakpoint(self):
+    # messages are old and ready to be archived after 5 minutes
+    return datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=5)
+
+  # returns the live message breakpoint as a MongoDB objectId
+  def _live_message_objectId(self):
+    return ObjectId.from_datetime(self._live_message_breakpoint())
+
+  # store a cancer level for a single message in a channel
+  def store(self, channel, cancer):
+    message = {
+      'channel': channel,
+      'cancer': int(cancer)
+    }
+
+    self.db.messages.insert_one(message)
+    #logger.debug('[storage] inserting %s %s', message['channel'], message['cancer'])
+
+  # returns the cancer history of a channel
+  def history(self, channel):
+    query = {"_id.channel": channel}
+    result = self.db.history.find(query)
+
+    return [self._point_from_history(p) for p in result]
+
+  # returns current cancer levels
+  def cancer(self):
+    pipeline = [{
+      "$match": {
+        '_id': {'$gte': self._live_message_objectId() }
+      }
+    }, {
+      "$group": {
+        "_id": "$channel",
+        "cancer": {"$sum": "$cancer"},
+        "messages": {"$sum": 1}
+      }
+    }, {
+      "$sort": {
+        "_id": 1
+      }
+    }]
+    result = self.db.messages.aggregate(pipeline)
+
+    return [self._point_from_aggregate(c) for c in result]
+
+import time
+
+if __name__ == "__main__":
+  logging.basicConfig(level=logging.DEBUG)
+
+  store = Storage(True)
+  while True:
+    time.sleep(60)
