@@ -20,7 +20,7 @@ from twitchcancer.source.twitch import Twitch
 class Sleeper():
 
   def __init__(self):
-    self.storage = Storage()
+    self.storage = Storage(cron=True)
     self.queue = Queue()
     self.sources = []
 
@@ -39,8 +39,6 @@ class Sleeper():
                 self.monitor(source)
 
         logger.info("[monitor] Cycle ran with %s sources running", len(self.sources))
-
-        # TODO: merge older data with a group by 5 minutes interval kind of thing
 
         # wait until our next cycle
         time.sleep(60)
