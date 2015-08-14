@@ -41,10 +41,10 @@ class Storage:
     self.db = client.twitchcancer
     self.cron = None
 
-    # archive old messages every 5 minutes
+    # archive old messages every minute
     if cron:
       self.cron = twitchcancer.cron.Cron()
-      self.cron.add(call=self._archive, interval=5)
+      self.cron.add(call=self._archive)
       self.cron.start()
 
   # consolidate and archive db.messages data into db.history
@@ -57,7 +57,7 @@ class Storage:
 
     # map_reduce messages into { '_id': date, channel, 'values': cancer, messages }
     map_js = Code("function() {"
-                  "  var coeff = 1000 * 60 * 5; "
+                  "  var coeff = 1000 * 60 * 1; " # group by minute
                   "  var roundTime = new Date(Math.floor(this._id.getTimestamp() / coeff) * coeff);"
                   "  var key = { 'channel': this.channel, 'date': roundTime };"
                   "  emit(key, { cancer: this.cancer, messages: 1 });"
@@ -73,7 +73,7 @@ class Storage:
                       "};")
 
     # db.messages -> m/r (merge) -> db.history
-    self.db.messages.map_reduce(map_js, reduce_js, {'merge': 'history'}, query=query)
+    self.db.messages.map_reduce(map_js, reduce_js, {'reduce': 'history'}, query=query)
 
     # delete archived messages
     self.db.messages.delete_many(query)
@@ -100,8 +100,8 @@ class Storage:
 
   # returns the datetime where live and archived messages split
   def _live_message_breakpoint(self):
-    # messages are old and ready to be archived after 5 minutes
-    return datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=5)
+    # messages are old and ready to be archived after 1 minute
+    return datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=1)
 
   # returns the live message breakpoint as a MongoDB objectId
   def _live_message_objectId(self):
