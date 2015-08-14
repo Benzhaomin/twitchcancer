@@ -11,17 +11,16 @@ angular.module('twitchCancer')
   .controller('MainCtrl', function ($scope, $http, $interval) {
     $scope.cancer = [];
 
-    $interval(function() {
-      $http.get('http://localhost:8080/cancer/forsenlol|amazhs|massansc|savjz?horizon=1').success(function(data) {
-        $scope.cancer = data.channels.map(function(channel) {
-          return Object.keys(channel).map(function(name) {
-            return {'key': name, 'value': Math.round(channel[name]*100*100) / 100};
-          })[0];
-        });
-      });
-    }, 5000);
+    var update = function() {
+      $http.get('http://localhost:8080/live').success(function(data) {
+        $scope.cancer = data.channels.sort(function(a, b) {
+          return b.cancer - a.cancer;
+        }).slice(0,10);
+      })
+    };
 
-    // {"channels": [{"amazhs": 0.8132028625675478}]}
+    update();
+    $interval(update, 5000);
   })
   .directive('barsChart', function () {
     return {
@@ -30,8 +29,13 @@ angular.module('twitchCancer')
       scope: {data: '=chartData'},
       link: function (scope, element, attrs) {
         var chart = d3.select(element[0]).append("div").attr("class", "chart");
+        var x = d3.scale.linear().range([10,99]);
 
         scope.$watch('data', function() {
+
+          x.domain(d3.extent(scope.data, function(d) {
+            return d.cancer;
+          }));
 
           //console.log(scope.data);
           var div = chart.selectAll('div')
@@ -43,8 +47,9 @@ angular.module('twitchCancer')
           div.enter().append("div")
             .attr("class", "enter");
 
-          div.style("width", function(d) { return d.value + "%"; })
-            .text(function(d) { return d.key + " " + d.value + "%"; })
+
+          div.style("width", function(d) { return x(d.cancer) + "%"; })
+            .text(function(d) { return d.channel + ": " + d.cancer; })
         });
       }
     };
