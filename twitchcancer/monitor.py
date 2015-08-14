@@ -34,7 +34,7 @@ class Sleeper():
             data = json.loads(response.read().decode())
 
             for stream in data['streams']:
-              if stream['viewers'] > 1000:
+              if stream['viewers'] > 3000:
                 source = Twitch(stream['channel']['name'])
                 self.monitor(source)
 
