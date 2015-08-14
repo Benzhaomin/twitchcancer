@@ -25,6 +25,10 @@ class Diagnosis:
   def diagnose(self, message):
     return [s for s in self.symptoms if s.exhibited_by(message)]
 
+  # returns the total of cancer points of the message
+  def points(self, message):
+    return sum([s.points(message) for s in self.symptoms])
+
   # run a full diagnosis of a source
   def full_diagnosis(self, source):
     sane = 0

@@ -65,21 +65,24 @@ class Sleeper():
 
 # record cancer thread, 1 per Sleeper
 def _record_cancer(queue, storage):
+  diagnosis = Diagnosis()
+
   while True:
     # get cancer records for channels
-    (channel, cancer) = queue.get()
+    (channel, message) = queue.get()
+
+    # compute points for the message
+    points = diagnosis.points(message)
 
     # store cancer records for later
-    storage.store(channel, cancer)
-    logger.debug("[monitor] Recorded cancer for channel %s", channel)
+    storage.store(channel, points)
+    #logger.debug("[monitor] Recorded cancer for channel %s", channel)
 
 # monitor source thread, 1 per source
 def _monitor_one(source, queue):
-  diagnosis = Diagnosis()
-
-  # pass every message as a cancer record to the queue
+  # pass every message to the record queue
   for message in source:
-    queue.put((source.name(), diagnosis.cancer(message)))
+    queue.put((source.name(), message))
 
 def monitor(sources):
   # profiling: yappi.start()
