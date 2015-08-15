@@ -17,7 +17,8 @@ angular
     'ngRoute',
     'ngSanitize',
     'ngTouch',
-    'ui.bootstrap'
+    'ui.bootstrap',
+    'twitchProfile'
   ])
   .config(function ($routeProvider) {
     $routeProvider

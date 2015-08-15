@@ -1,6 +1,8 @@
 <ul>
   <li ng-repeat='record in records|limitTo:3 track by record.channel'>
     <h3 title="{{ record.value | number : 2 }} on {{ record.date }}">{{ record.channel }}</h3>
+
+    <twitchprofile channel="{{ record.channel }}"></twitchprofile>
   </li>
 </ul>
 

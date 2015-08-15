@@ -6,6 +6,10 @@ leaderboard {
 
     li {
       text-align: center;
+
+      img {
+        max-width: 100%;
+      }
     }
 
     li:nth-child(1) {
