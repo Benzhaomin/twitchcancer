@@ -38,10 +38,9 @@ Long-running process used to record historical data on cancer level of several c
 
 ### HTTP API
 
-JSON API exposing historical records and live level of cancer.
+JSON API exposing live activity and leaderboards.
 
 - run: `python twitchcancer/main.py history`
-- query: `curl 'http://localhost:8080/history/summit1g'
 - query: `curl 'http://localhost:8080/live'
 - query: `curl 'http://localhost:8080/leaderboards'
 

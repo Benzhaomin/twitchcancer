@@ -1,0 +1,41 @@
+leaderboard {
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+
+    li {
+      text-align: center;
+    }
+
+    li:nth-child(1) {
+      width: 80%;
+      margin: 0 auto;
+      border-bottom: 8px solid #ffd741;
+
+      h3 {
+        font-size: 3em;
+      }
+    }
+    li:nth-child(2) {
+      display: inline-block;
+      width: 50%;
+      border-bottom: 5px solid #7e7c7d;
+
+      h3 {
+        font-size: 1.7em;
+      }
+    }
+    li:nth-child(3) {
+      display: inline-block;
+      width: 33%;
+      margin-left: 13%;
+      margin-top: 20px;
+      border-bottom: 5px solid #d96e38;
+
+      h3 {
+        font-size: 1.3em;
+      }
+    }
+  }
+}

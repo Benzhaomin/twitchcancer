@@ -1,3 +1,9 @@
+<ul>
+  <li ng-repeat='record in records|limitTo:3 track by record.channel'>
+    <h3 title="{{ record.value | number : 2 }} on {{ record.date }}">{{ record.channel }}</h3>
+  </li>
+</ul>
+
 <table class="table table-condensed">
   <tr>
     <th>Channel</th>
@@ -6,7 +12,7 @@
   <tr>
   <tr ng-repeat='record in records track by record.channel'>
     <td>{{ record.channel }}</td>
-    <td>{{ record.value }}</td>
+    <td>{{ record.value | number : 2 }}</td>
     <td>{{ record.date }}</td>
   </tr>
 </table>
