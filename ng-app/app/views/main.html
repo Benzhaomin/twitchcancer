@@ -1,76 +1,78 @@
-<div class="row">
-  <div class="span12">
-    <h1>Live <small>over the last minute</small></h1>
+<h1>Live Feed</h1>
 
-    <div class="col-lg-4 col-md-6 col-xs-12">
-      <h2>Cancer</h2>
-      <bars-chart chart-data="live" chart-field="cancer"></bars-chart>
+<div class="row">
+  <div class="col-lg-4 col-md-6 col-xs-12">
+    <h3 class="data-type data-type-cancer">Cancer</h2>
+    <bars-chart chart-data="live" chart-field="cancer"></bars-chart>
   </div>
 
-    <div class="col-lg-4 col-md-6 col-xs-12">
-      <h2>Messages</h2>
-      <bars-chart chart-data="live" chart-field="messages"></bars-chart>
-    </div>
+  <div class="col-lg-4 col-md-6 col-xs-12">
+    <h3 class="data-type data-type-messages">Messages</h2>
+    <bars-chart chart-data="live" chart-field="messages"></bars-chart>
+  </div>
 
-    <div class="col-lg-4 col-md-6 col-xs-12">
-      <h2>Cancer per message</h2>
-      <bars-chart chart-data="live" chart-field="cpm"></bars-chart>
-    </div>
+  <div class="col-lg-4 col-md-6 col-xs-12">
+    <h3 class="data-type data-type-cpm">Cancer per message</h2>
+    <bars-chart chart-data="live" chart-field="cpm"></bars-chart>
   </div>
 </div>
 
+
+<h1 title="since august 2015">Leaderboards</h1>
+
+<h2 title="short bursts of awesomeness">1 minute race</small></h2>
+
 <div class="row">
-  <h1>Leaderboards <small>since august 2015</small></h1>
-
-  <h2>Over a minute <small>short bursts of awesome</small></h2>
-
   <div class="col-lg-4 col-md-6 col-xs-12">
-    <h2>Cancer</h2>
-    <leaderboard profiles="profiles"board-data="leaderboards.cancer.minute" board-type="average"></leaderboard>
+    <h3 class="data-type data-type-cancer">Cancer</h2>
+    <leaderboard profiles="profiles"board-data="leaderboards.cancer.minute" board-type="minute"></leaderboard>
   </div>
 
   <div class="col-lg-4 col-md-6 col-xs-12">
-    <h2>Messages</h2>
-    <leaderboard profiles="profiles"board-data="leaderboards.messages.minute" board-type="average"></leaderboard>
+    <h3 class="data-type data-type-messages">Messages</h2>
+    <leaderboard profiles="profiles"board-data="leaderboards.messages.minute" board-type="minute"></leaderboard>
   </div>
 
   <div class="col-lg-4 col-md-6 col-xs-12">
-    <h2>Cancer per message</h2>
-    <leaderboard profiles="profiles" board-data="leaderboards.cpm.minute" board-type="average"></leaderboard>
+    <h3 class="data-type data-type-cpm">Cancer per message</h2>
+    <leaderboard profiles="profiles" board-data="leaderboards.cpm.minute" board-type="minute"></leaderboard>
   </div>
+</div>
 
-  <h2>Total <small>cancer hall-of-fame</small></h2>
+<h2 title="cancer hall-of-fame">Total</h2>
 
+<div class="row">
   <div class="col-lg-4 col-md-6 col-xs-12">
-    <h2>Cancer</h2>
+    <h3 class="data-type data-type-cancer">Cancer</h2>
     <leaderboard profiles="profiles" board-data="leaderboards.cancer.total" board-type="total"></leaderboard>
   </div>
 
   <div class="col-lg-4 col-md-6 col-xs-12">
-    <h2>Messages</h2>
+    <h3 class="data-type data-type-messages">Messages</h2>
     <leaderboard profiles="profiles"board-data="leaderboards.messages.total" board-type="total"></leaderboard>
   </div>
 
   <div class="col-lg-4 col-md-6 col-xs-12">
-    <h2>Cancer per message</h2>
+    <h3 class="data-type data-type-cpm">Cancer per message</h2>
     <leaderboard profiles="profiles"board-data="leaderboards.cpm.total" board-type="total"></leaderboard>
   </div>
+</div>
 
-  <h2>Average <small>delivering day-in day-out</small></h2>
+<h2 title="delivering day-in day-out">Average</h2>
 
+<div class="row">
   <div class="col-lg-4 col-md-6 col-xs-12">
-    <h2>Cancer</h2>
+    <h3 class="data-type data-type-cancer">Cancer</h2>
     <leaderboard profiles="profiles"board-data="leaderboards.cancer.average" board-type="average"></leaderboard>
   </div>
 
   <div class="col-lg-4 col-md-6 col-xs-12">
-    <h2>Messages</h2>
+    <h3 class="data-type data-type-messages">Messages</h2>
     <leaderboard profiles="profiles"board-data="leaderboards.messages.average" board-type="average"></leaderboard>
   </div>
 
   <div class="col-lg-4 col-md-6 col-xs-12">
-    <h2>Cancer per message</h2>
+    <h3 class="data-type data-type-cpm">Cancer per message</h2>
     <leaderboard profiles="profiles"board-data="leaderboards.cpm.average" board-type="average"></leaderboard>
   </div>
-
 </div>

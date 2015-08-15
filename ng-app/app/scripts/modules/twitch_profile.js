@@ -10,15 +10,19 @@
  */
 angular
   .module('twitchProfile', [
-    'ui.bootstrap'
+    'ui.bootstrap',
+    'ngStorage'
   ])
-  .factory('twitch_profiles', function($http) {
-    var profiles = {}
+  .factory('twitch_profiles', function($http, $localStorage, $sessionStorage) {
 
-    var _load_channel = function(channel) {
+    // create the profiles collection on first load
+    $localStorage.profiles = $localStorage.profiles || {}
+
+    // load a channel using TwitchTV's API
+    var _remote_load = function(channel) {
+
       $http.jsonp('https://api.twitch.tv/kraken/channels/'+channel.replace('#', '')+'?callback=JSON_CALLBACK').then(function(response) {
-
-        profiles[channel] = response.data;
+        $localStorage.profiles[channel] = response.data;
 
         console.log('[jsonp] finished loading ' + channel);
       }, function(err) {
@@ -30,11 +34,17 @@ angular
 
     return {
       'load': function(channel) {
-        if (!(channel in profiles)) {
-          profiles[channel] = null;
-          _load_channel(channel);
+        // new channel or empty local storage, time to load
+        if (!(channel in $localStorage.profiles)) {
+          // placeholder to return to watcher
+          $localStorage.profiles[channel] = null;
+
+          // (async) load the channel's profile
+          _remote_load(channel);
         }
-        return profiles[channel];
+
+        // might be null, better $watch it
+        return $localStorage.profiles[channel];
       }
     };
   })
@@ -45,14 +55,15 @@ angular
       scope: {channel: '@'},
       templateUrl : 'views/twitch_profile.html',
       link: function (scope, element, attrs) {
-        //console.log(scope.profiles);
+
+        // ask the factory to load the profile and render the template when the profile is ready
         scope.$watch(function() {
             return twitch_profiles.load(scope.channel)
           },
           function(newValue, oldValue) {
             if (newValue) {
               //console.log('[directive] profile loaded ' + scope.channel);
-              scope.profile = twitch_profiles.load(scope.channel);
+              scope.profile = newValue;
             }
           }
         )

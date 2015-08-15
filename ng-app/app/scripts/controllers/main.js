@@ -68,7 +68,7 @@ angular.module('twitchCancer')
       restrict: 'E',
       replace: false,
       templateUrl : 'views/leaderboard.html',
-      scope: {records: '=boardData'}
+      scope: {records: '=boardData', boardType: '@'}
     };
    });
 ;

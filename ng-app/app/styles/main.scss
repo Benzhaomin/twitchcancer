@@ -28,6 +28,18 @@ body {
   border-top: 1px solid #e5e5e5;
 }
 
+h1, h2, h3 {
+  font-variant: small-caps;
+}
+h1, h2, h3 {
+  text-align: center;
+}
+
+h3.data-type {
+  padding-bottom: 8px;
+  border-bottom: 6px solid #eee;
+}
+
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
   .container {

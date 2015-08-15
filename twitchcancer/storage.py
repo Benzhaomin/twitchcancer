@@ -255,7 +255,7 @@ class Storage:
 
       return [{
         'channel': r["_id"],
-        'date': str(r["minute"][what]["date"]),
+        'date': r["minute"][what]["date"].isoformat(),
         'value': str(r["minute"][what]["value"]),
       } for r in result]
 
@@ -266,7 +266,7 @@ class Storage:
 
       return [{
         'channel': r["_id"],
-        'date': str(r["total"]["date"]),
+        'date': r["total"]["date"].isoformat(),
         'value': str(r["total"][what]),
       } for r in result]
 
@@ -277,7 +277,7 @@ class Storage:
 
       return [{
         'channel': r["_id"],
-        'date': str(r["total"]["date"]),
+        'date': r["total"]["date"].isoformat(),
         'value': str(r["average"][what]),
       } for r in result]
 
