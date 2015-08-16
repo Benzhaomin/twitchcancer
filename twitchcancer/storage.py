@@ -4,8 +4,13 @@
 import collections
 import datetime
 import logging
+import threading
 logger = logging.getLogger(__name__)
 
+# zeromq
+import zmq
+
+# mongodb
 from bson.code import Code
 from bson.objectid import ObjectId
 import pymongo
@@ -54,25 +59,44 @@ import twitchcancer.cron
 # use MongoDB straight up
 class Storage:
 
-  def __init__(self, cron=False):
+  SOCKET_URI = "ipc:///tmp/twitchcancer-storage.sock"
+
+  def __init__(self, master=False):
     super().__init__()
 
     client = pymongo.MongoClient()
     self.db = client.twitchcancer
 
-    # store messages in memory only
-    self.messages = collections.deque()
+    self.master = master
+    logger.debug('created a Storage object with master=%s', master)
 
-    # allow callers to signal they need maintenance to run
-    self.cron = None
+    # the master storage handles messages streaming in
+    if self.master is True:
+      # store messages in memory only
+      self.messages = collections.deque()
+      self.messages_lock = threading.Lock()
 
-    if cron:
-      # process and delete db.messages every minute
+      # publish cancer based on self.messages
+      context = zmq.Context()
+      self.socket = context.socket(zmq.REP)
+      self.socket.bind(self.SOCKET_URI)
+      logger.debug("bound socket to %s", Storage.SOCKET_URI)
+
+      t = threading.Thread(target=self._publish_cancer)
+      t.daemon = True
+      t.start()
+      logger.info("started publish cancer thread")
+
+      # process and delete self.messages every minute
       self.cron = twitchcancer.cron.Cron()
       self.cron.add(call=self._archive)
       self.cron.start()
-
-    logger.debug('created a Storage object with cron support set to %s', (self.cron != None))
+    else:
+      # read cancer levels from the master
+      context = zmq.Context()
+      self.socket = context.socket(zmq.REQ)
+      self.socket.connect(self.SOCKET_URI)
+      logger.debug("connected socket to %s", Storage.SOCKET_URI)
 
   # update leaderboards from db.messages and ditch old messages
   def _archive(self):
@@ -98,28 +122,29 @@ class Storage:
     history = collections.defaultdict(lambda: collections.defaultdict(lambda: {'cancer': 0, 'messages': 0}))
 
     # run until there's no old message left
-    while True:
-      try:
-        message = self.messages.popleft()
-      except IndexError:
-        logger.info('archive ate all the messages, meaning we got no message in the last minute')
-        break
+    with self.messages_lock:
+      while True:
+        try:
+          message = self.messages.popleft()
+        except IndexError:
+          logger.info('archive ate all the messages, meaning we got no message in the last minute')
+          break
 
-      # stop if the message is too new
-      if message['date'].replace(second=0, microsecond=0) >= breakpoint:
-        self.messages.appendleft(message)
-        logger.debug('archiving loop stopped at message %s', message['date'])
-        break
+        # stop if the message is too new
+        if message['date'].replace(second=0, microsecond=0) >= breakpoint:
+          self.messages.appendleft(message)
+          logger.debug('archiving loop stopped at message %s', message['date'])
+          break
 
-      # group messages by minute
-      message['date'] = message['date'].replace(second=0, microsecond=0)
+        # group messages by minute
+        message['date'] = message['date'].replace(second=0, microsecond=0)
 
-      # defaultdict builds everything as needed
-      history[message['date']][message['channel']]['cancer'] += message['cancer']
-      history[message['date']][message['channel']]['messages'] += 1
+        # defaultdict builds everything as needed
+        history[message['date']][message['channel']]['cancer'] += message['cancer']
+        history[message['date']][message['channel']]['messages'] += 1
 
-      # debugging
-      message_delta += 1
+        # debugging
+        message_delta += 1
 
     # update leaderboards with this new data
     for minute, channels in history.items():
@@ -230,26 +255,46 @@ class Storage:
       'cancer': int(cancer)
     }
 
-    self.messages.append(message)
+    with self.messages_lock:
+      self.messages.append(message)
 
-  # returns live cancer levels
-  def cancer(self):
+  # returns live cancer levels based on self.messages
+  def _cancer(self):
     breakpoint = self._live_message_breakpoint()
     minute = collections.defaultdict(lambda: {'cancer': 0, 'messages': 0})
 
     # sum cancer points and count recent messages for each channel
-    for message in reversed(self.messages):
-      if message['date'] < breakpoint:
-        break
+    with self.messages_lock:
+      for message in reversed(self.messages):
+        if message['date'] < breakpoint:
+          break
 
-      minute[message['channel']]['cancer'] += message['cancer']
-      minute[message['channel']]['messages'] += 1
+        minute[message['channel']]['cancer'] += message['cancer']
+        minute[message['channel']]['messages'] += 1
 
     return [{
       'channel': channel,
       'cancer': records['cancer'],
       'messages': records['messages'],
     } for channel, records in minute.items()]
+
+  # publish cancer on a socket
+  def _publish_cancer(self):
+    while True:
+      self.socket.recv()
+      self.socket.send_pyobj(self.cancer())
+
+  # returns live cancer levels by requesting them from the master storage
+  def _master_cancer(self):
+    self.socket.send(b'')
+    return self.socket.recv_pyobj()
+
+  # returns live cancer levels either from self or from the master
+  def cancer(self):
+    if self.master:
+      return self._cancer()
+    else:
+      return self._master_cancer()
 
   # returns one of the leaderboards
   # @db.read
@@ -287,6 +332,7 @@ class Storage:
         'date': r["total"]["date"].isoformat(),
         'value': str(r["average"][what]),
       } for r in result]
+
 
 import time
 
