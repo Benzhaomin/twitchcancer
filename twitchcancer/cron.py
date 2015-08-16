@@ -4,9 +4,8 @@
 import time
 import datetime
 from threading import Thread
-
 import logging
-logger = logging.getLogger('twitchcancer.logger')
+logger = logging.getLogger(__name__)
 
 CYCLE_DURATION = datetime.timedelta(minutes=1)
 
@@ -32,7 +31,7 @@ class Cron(Thread):
     }
 
     self.jobs.append(job)
-    logger.debug('[cron] added job %s', job)
+    logger.debug('added job %s', job)
 
   def run(self):
     while True:
@@ -51,8 +50,8 @@ class Cron(Thread):
       duration = datetime.datetime.now(datetime.timezone.utc) - start
       ran = [job for job in self.jobs if job['last_run'] == start]
 
-      logger.info('[cron] ran %s jobs in %s', len(ran), duration);
-      logger.debug('[cron] jobs %s', ran)
+      logger.info('ran %s jobs in %s', len(ran), duration);
+      logger.debug('jobs %s', ran)
 
       # wait until our next run
       time.sleep((CYCLE_DURATION - duration).total_seconds())

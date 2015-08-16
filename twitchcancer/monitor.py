@@ -9,7 +9,7 @@ from queue import Queue
 queue = Queue()
 
 import logging
-logger = logging.getLogger('twitchcancer.logger')
+logger = logging.getLogger(__name__)
 
 from twitchcancer.diagnosis import Diagnosis
 from twitchcancer.storage import Storage
@@ -34,11 +34,11 @@ class Sleeper():
             data = json.loads(response.read().decode())
 
             for stream in data['streams']:
-              if stream['viewers'] > 3000:
+              if stream['viewers'] > 1000:
                 source = Twitch(stream['channel']['name'])
                 self.monitor(source)
 
-        logger.info("[monitor] Cycle ran with %s sources running", len(self.sources))
+        logger.info("cycle ran with %s sources up", len(self.sources))
 
         # wait until our next cycle
         time.sleep(60)
@@ -50,7 +50,7 @@ class Sleeper():
     t = Thread(target=_record_cancer, kwargs={'queue':self.queue, 'storage':self.storage})
     t.daemon = True
     t.start()
-    logger.info("[monitor] Started record cancer thread")
+    logger.info("started record cancer thread")
 
   # starts a monitor thread for the given source if it's not already running
   def monitor(self, source):
@@ -58,10 +58,10 @@ class Sleeper():
       return
     self.sources.append(source)
 
-    t = Thread(name="Thread "+source.name(), target=_monitor_one, kwargs={'source':source, 'queue':self.queue})
+    t = Thread(name="Thread-"+source.name(), target=_monitor_one, kwargs={'source':source, 'queue':self.queue})
     t.daemon = True
     t.start()
-    logger.info("[monitor] Started monitoring %s", source.name())
+    logger.info("started monitoring %s in thread %s", source.name(), t.name)
 
 # record cancer thread, 1 per Sleeper
 def _record_cancer(queue, storage):
@@ -76,7 +76,7 @@ def _record_cancer(queue, storage):
 
     # store cancer records for later
     storage.store(channel, points)
-    #logger.debug("[monitor] Recorded cancer for channel %s", channel)
+    #logger.debug("Recorded cancer for channel %s", channel)
 
 # monitor source thread, 1 per source
 def _monitor_one(source, queue):

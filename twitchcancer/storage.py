@@ -3,7 +3,7 @@
 
 import datetime
 import logging
-logger = logging.getLogger('twitchcancer.logger')
+logger = logging.getLogger(__name__)
 
 from bson.code import Code
 from bson.objectid import ObjectId
@@ -71,15 +71,17 @@ class Storage:
     self.cron = None
 
     # update leaderboards every minute
-    if cron:
+    if False && cron:
       self.cron = twitchcancer.cron.Cron()
       self.cron.add(call=self._archive)
       self.cron.start()
 
+    logger.debug('created a Storage object with cron support set to %s', (self.cron != None))
+
   # update leaderboards from db.messages and ditch old messages
   def _archive(self):
     now = datetime.datetime.now(datetime.timezone.utc)
-    logger.debug('[storage] archive started at %s', now)
+    logger.debug('archive started at %s', now)
 
     # only archive messages that are too old
     query = { '_id': {'$lte': self._live_message_objectId() } }
@@ -113,14 +115,14 @@ class Storage:
     # delete old messages
     self.db.messages.delete_many(query)
 
-    logger.debug('[storage] archive finished at %s', datetime.datetime.now(datetime.timezone.utc))
+    logger.debug('archive finished at %s', datetime.datetime.now(datetime.timezone.utc))
 
   def _update_leaderboard(self, new):
     find = {'_id': new['_id']}
     record = self.db.leaderboard.find_one(find)
 
     if not record:
-      logger.debug('[storage] inserting new leaderboard record for %s', new['_id'])
+      logger.debug('inserting new leaderboard record for %s', new['_id'])
       self.db.leaderboard.insert_one(new)
     else:
       update = {
@@ -148,19 +150,19 @@ class Storage:
         update['$set']['minute.cancer.value'] = new['minute']['cancer']['value']
         update['$set']['minute.cancer.date'] = new['minute']['cancer']['date']
 
-        logger.debug('[storage] new cancer pb for %s, %s, was %s', new['_id'], new['minute']['cancer'], record['minute']['cancer'])
+        #logger.debug('new cancer pb for %s, %s, was %s', new['_id'], new['minute']['cancer'], record['minute']['cancer'])
 
       if new['minute']['messages']['value'] > record['minute']['messages']['value']:
         update['$set']['minute.messages.value'] = new['minute']['messages']['value']
         update['$set']['minute.messages.date'] = new['minute']['messages']['date']
 
-        logger.debug('[storage] new messages pb for %s, %s, was %s', new['_id'], new['minute']['messages'], record['minute']['messages'])
+        #logger.debug('new messages pb for %s, %s, was %s', new['_id'], new['minute']['messages'], record['minute']['messages'])
 
       if new['minute']['cpm']['value'] > record['minute']['cpm']['value']:
         update['$set']['minute.cpm.value'] = new['minute']['cpm']['value']
         update['$set']['minute.cpm.date'] = new['minute']['cpm']['date']
 
-        logger.debug('[storage] new cpm pb for %s, %s, was %s', new['_id'], new['minute']['cpm'], record['minute']['cpm'])
+        #logger.debug('new cpm pb for %s, %s, was %s', new['_id'], new['minute']['cpm'], record['minute']['cpm'])
 
       self.db.leaderboard.update(find, update)
 
@@ -222,7 +224,7 @@ class Storage:
     }
 
     self.db.messages.insert_one(message)
-    #logger.debug('[storage] inserting %s %s', message['channel'], message['cancer'])
+    #logger.debug('inserting %s %s', message['channel'], message['cancer'])
 
   # returns current cancer levels
   def cancer(self):

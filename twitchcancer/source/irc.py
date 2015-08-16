@@ -4,7 +4,7 @@
 import queue
 import threading
 import logging
-logger = logging.getLogger('twitchcancer.logger')
+logger = logging.getLogger(__name__)
 
 from twitchcancer.source.ircconfig import config as CONFIG
 from twitchcancer.lib.ircclient import IRCClient
@@ -32,7 +32,7 @@ class IRC(Source):
     t.daemon = True
     t.start()
 
-    logger.debug('[irc] started a client thread for %s', self.channel);
+    logger.debug('started a client thread for %s', self.channel);
 
   # we are iterable
   def __iter__(self):

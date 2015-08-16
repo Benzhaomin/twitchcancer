@@ -22,7 +22,7 @@ angular.module('twitchCancer')
     };
 
     update();
-    //$interval(update, 5000);
+    $interval(update, 5000);
 
     $http.get('http://localhost:8080/leaderboards').success(function(data) {
       $scope.leaderboards = data;

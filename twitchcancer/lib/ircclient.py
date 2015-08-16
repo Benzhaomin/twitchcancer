@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import irc.client
-import logging
 import itertools
-logger = logging.getLogger('twitchcancer.logger')
+import logging
+logger = logging.getLogger(__name__)
+
+import irc.client
 
 class IRCClient(irc.client.SimpleIRCClient):
 
@@ -36,17 +37,17 @@ class IRCClient(irc.client.SimpleIRCClient):
 
   def on_welcome(self, connection, event):
     if irc.client.is_channel(self.channel):
-      logger.debug('[client]: welcome, joining %s', self.channel)
+      logger.debug('welcome, joining %s', self.channel)
       connection.join(self.channel)
     else:
-      logger.debug('[client]: welcome but channel %s bot found', self.channel)
+      logger.debug('welcome but channel %s bot found', self.channel)
       sys.exit(1)
 
   def on_join(self, connection, event):
-    logger.debug('[client]: joined %s', self.channel)
+    logger.debug('joined %s', self.channel)
 
   def on_pubmsg(self, connection, event):
-    #logger.debug('[client]: read %s', event.arguments)
+    #logger.debug('read %s', event.arguments)
 
     # forward the message to a callback if any
     do_nothing = lambda msg: None

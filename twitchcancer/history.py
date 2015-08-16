@@ -3,7 +3,7 @@
 
 import datetime
 import logging
-logger = logging.getLogger('twitchcancer.logger')
+logger = logging.getLogger(__name__)
 
 from bottle import Bottle, route, request, response, run
 app = Bottle()

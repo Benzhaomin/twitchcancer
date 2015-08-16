@@ -4,7 +4,7 @@
 import sys
 import argparse
 import logging
-logger = logging.getLogger('twitchcancer.logger')
+logger = logging.getLogger('twitchcancer')
 
 import twitchcancer.cure
 import twitchcancer.monitor
@@ -68,7 +68,8 @@ if __name__ == "__main__":
   if not isinstance(numeric_level, int):
     raise ValueError('Invalid log level: %s' % loglevel)
 
-  logging.basicConfig(level=numeric_level, format='%(asctime)s %(message)s')
+  logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+  logger.setLevel(numeric_level)
 
   # run the selected command
   args.func(args)

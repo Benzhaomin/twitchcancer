@@ -3,7 +3,7 @@
 
 import argparse
 import logging
-logger = logging.getLogger('twitchcancer.logger')
+logger = logging.getLogger(__name__)
 
 from twitchcancer.symptom.symptoms import *
 
@@ -27,7 +27,15 @@ class Diagnosis:
 
   # returns the total of cancer points of the message
   def points(self, message):
-    return sum([s.points(message) for s in self.symptoms])
+    points = sum([s.points(message) for s in self.symptoms])
+
+    if points > 100:
+      if points > 1000:
+        logger.info('very high score (%s) on %s', points, message)
+      else:
+        logger.debug('high score (%s) on %s', points, message)
+
+    return points
 
   # run a full diagnosis of a source
   def full_diagnosis(self, source):
@@ -39,10 +47,10 @@ class Diagnosis:
 
       if len(symptoms) == 0 :
         sane += 1
-        logger.info('[diagnosis] sane: %s', message.strip())
+        logger.debug('sane: %s', message.strip())
       else:
         ill += 1
-        logger.info('[diagnosis] ill (%s): %s', ', '.join(map(str, symptoms)), message.strip())
+        logger.debug('ill (%s): %s', ', '.join(map(str, symptoms)), message.strip())
 
     print("messages {total}, sane {sane}, ill {ill} ".format(total=(ill+sane), sane=sane, ill=ill))
     print("health {health:.2f}% ".format(health=100*sane/(ill+sane)))

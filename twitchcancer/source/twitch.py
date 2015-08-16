@@ -4,12 +4,12 @@
 import urllib.request
 import json
 import logging
-logger = logging.getLogger('twitchcancer.logger')
+logger = logging.getLogger(__name__)
 
 from twitchcancer.source.irc import IRC
 
 class Twitch(IRC):
-  
+
   def __init__(self, channel):
     super().__init__(channel)
 
@@ -29,8 +29,8 @@ class Twitch(IRC):
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
-  
+
   source = Twitch('#gamesdonequick')
-  
+
   for m in source:
     pass
