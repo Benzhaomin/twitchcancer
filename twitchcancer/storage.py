@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import collections
 import datetime
 import logging
 logger = logging.getLogger(__name__)
@@ -14,20 +15,10 @@ import twitchcancer.cron
 '''
   Schema
 
-  messages {
+  messages (in memory) {
+    date: datetime of creation
     channel: "#channel",
     cancer: cancer points,
-  }
-
-  map_reduce {
-    '_id': {
-      date: beginning of the period,
-      channel: "#channel",
-    },
-    'values': {
-      cancer: cancer points,
-      messages: message count
-    }
   }
 
   leaderboard {
@@ -68,10 +59,15 @@ class Storage:
 
     client = pymongo.MongoClient()
     self.db = client.twitchcancer
+
+    # store messages in memory only
+    self.messages = collections.deque()
+
+    # allow callers to signal they need maintenance to run
     self.cron = None
 
-    # update leaderboards every minute
-    if False && cron:
+    if cron:
+      # process and delete db.messages every minute
       self.cron = twitchcancer.cron.Cron()
       self.cron.add(call=self._archive)
       self.cron.start()
@@ -80,43 +76,66 @@ class Storage:
 
   # update leaderboards from db.messages and ditch old messages
   def _archive(self):
-    now = datetime.datetime.now(datetime.timezone.utc)
-    logger.debug('archive started at %s', now)
+    # debugging
+    now_start = datetime.datetime.now(datetime.timezone.utc)
+    message_delta = 0
+    logger.debug('archive started at %s with %s messages total', now_start, len(self.messages))
 
-    # only archive messages that are too old
-    query = { '_id': {'$lte': self._live_message_objectId() } }
+    # run at 12:31:20
+    # bp  at 12:30:00
+    breakpoint = self._live_message_breakpoint()
+    breakpoint = breakpoint.replace(second=0, microsecond=0)
 
-    # group message by channel+minute
-    # map_reduce messages into { '_id': date, channel, 'values': cancer, messages }
-    map_js = Code("function() {"
-                  "  var coeff = 1000 * 60 * 1; " # group by minute
-                  "  var roundTime = new Date(Math.floor(this._id.getTimestamp() / coeff) * coeff);"
-                  "  var key = { 'channel': this.channel, 'date': roundTime };"
-                  "  emit(key, { cancer: this.cancer, messages: 1 });"
-                  "};")
+    '''
+      map/reduce self.messages into history = {
+        '{minute}': {
+          '{channel} {
+            'cancer: cancer points,
+            'messages': messages count
+          }
+      }
+    '''
+    history = collections.defaultdict(lambda: collections.defaultdict(lambda: {'cancer': 0, 'messages': 0}))
 
-    reduce_js = Code( "function(key, values) {"
-                      "  var result = { cancer: 0, messages: 0};"
-                      "  values.forEach(function(object) {"
-                      "    result.cancer += object.cancer;"
-                      "    result.messages += object.messages;"
-                      "  });"
-                      "  return result;"
-                      "};")
+    # run until there's no old message left
+    while True:
+      try:
+        message = self.messages.popleft()
+      except IndexError:
+        logger.info('archive ate all the messages, meaning we got no message in the last minute')
+        break
 
-    # aggregate old messages into db.history
-    self.db.messages.map_reduce(map_js, reduce_js, {'replace': 'history'}, query=query)
+      # stop if the message is too new
+      if message['date'].replace(second=0, microsecond=0) >= breakpoint:
+        self.messages.appendleft(message)
+        logger.debug('archiving loop stopped at message %s', message['date'])
+        break
+
+      # group messages by minute
+      message['date'] = message['date'].replace(second=0, microsecond=0)
+
+      # defaultdict builds everything as needed
+      history[message['date']][message['channel']]['cancer'] += message['cancer']
+      history[message['date']][message['channel']]['messages'] += 1
+
+      # debugging
+      message_delta += 1
 
     # update leaderboards with this new data
-    result = self.db.history.find().sort([("id", pymongo.ASCENDING)])
-    for r in result:
-      self._update_leaderboard(self._history_to_leaderboard(r))
+    for minute, channels in history.items():
+      for channel, record in channels.items():
+        h = self._history_to_leaderboard(minute, channel, record['cancer'], record['messages'])
 
-    # delete old messages
-    self.db.messages.delete_many(query)
+        self._update_leaderboard(h)
 
-    logger.debug('archive finished at %s', datetime.datetime.now(datetime.timezone.utc))
+      logger.info('updated leaderboards with round %s with messages from %s channels', minute, len(channels))
 
+    # debugging
+    now_end = datetime.datetime.now(datetime.timezone.utc)
+    logger.debug('archived %s messages in %s ms, %s messages left', message_delta, (now_end - now_start).total_seconds() * 1000, len(self.messages))
+
+  # update db.leaderboard with this minute+channel record
+  # @db.write
   def _update_leaderboard(self, new):
     find = {'_id': new['_id']}
     record = self.db.leaderboard.find_one(find)
@@ -166,88 +185,74 @@ class Storage:
 
       self.db.leaderboard.update(find, update)
 
-  # transforms a db.history record into a db.leaderboard record, used as a poor-man's map/reduce
-  def _history_to_leaderboard(self, r):
+  # transforms an history record into a db.leaderboard record
+  def _history_to_leaderboard(self, date, channel, cancer, messages):
     return {
-      '_id': r['_id']['channel'],
+      '_id': channel,
       'minute': {
         'cancer': {
-          'value': r['value']['cancer'],
-          'date': r['_id']['date'],
+          'value': cancer,
+          'date': date,
         },
         'messages': {
-          'value': r['value']['messages'],
-          'date': r['_id']['date'],
+          'value': messages,
+          'date': date,
         },
         'cpm': {
-          'value': r['value']['cancer'] / r['value']['messages'],
-          'date': r['_id']['date'],
+          'value': cancer / messages,
+          'date': date,
         },
       },
       'total': {
-        'date': r['_id']['date'],
-        'cancer': r['value']['cancer'],
-        'messages': r['value']['messages'],
-        'cpm': r['value']['cancer'] / r['value']['messages'],
+        'date': date,
+        'cancer': cancer,
+        'messages': messages,
+        'cpm': cancer / messages,
       },
       'average': {
         'duration': 1,
-        'cancer': r['value']['cancer'],
-        'messages': r['value']['messages'],
-        'cpm': r['value']['cancer'] / r['value']['messages'],
+        'cancer': cancer,
+        'messages': messages,
+        'cpm': cancer / messages,
       }
-    }
-
-  # returns a JSON data point from an aggregated db.message record
-  def _point_from_aggregate(self, message):
-    return {
-      'channel': message['_id'],
-    #  'date': str(self._live_message_breakpoint()),
-      'cancer': message['cancer'],
-      'messages': message['messages'],
     }
 
   # returns the datetime where live and archived messages split
   def _live_message_breakpoint(self):
     # messages are old and ready to be archived after 1 minute
-    return datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=1)
-
-  # returns the live message breakpoint as a MongoDB objectId
-  def _live_message_objectId(self):
-    return ObjectId.from_datetime(self._live_message_breakpoint())
+    return (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=1))
 
   # store a cancer level for a single message in a channel
   def store(self, channel, cancer):
     message = {
+      'date': datetime.datetime.now(datetime.timezone.utc),
       'channel': channel,
       'cancer': int(cancer)
     }
 
-    self.db.messages.insert_one(message)
-    #logger.debug('inserting %s %s', message['channel'], message['cancer'])
+    self.messages.append(message)
 
-  # returns current cancer levels
+  # returns live cancer levels
   def cancer(self):
-    pipeline = [{
-      "$match": {
-        '_id': {'$gte': self._live_message_objectId() }
-      }
-    }, {
-      "$group": {
-        "_id": "$channel",
-        "cancer": {"$sum": "$cancer"},
-        "messages": {"$sum": 1}
-      }
-    }, {
-      "$sort": {
-        "_id": 1
-      }
-    }]
+    breakpoint = self._live_message_breakpoint()
+    minute = collections.defaultdict(lambda: {'cancer': 0, 'messages': 0})
 
-    result = self.db.messages.aggregate(pipeline)
+    # sum cancer points and count recent messages for each channel
+    for message in reversed(self.messages):
+      if message['date'] < breakpoint:
+        break
 
-    return [self._point_from_aggregate(c) for c in result]
+      minute[message['channel']]['cancer'] += message['cancer']
+      minute[message['channel']]['messages'] += 1
 
+    return [{
+      'channel': channel,
+      'cancer': records['cancer'],
+      'messages': records['messages'],
+    } for channel, records in minute.items()]
+
+  # returns one of the leaderboards
+  # @db.read
   def leaderboard(self, what, per):
 
     if per == 'minute':
@@ -289,6 +294,3 @@ if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG)
 
   store = Storage()
-  result = store.db.history.find().sort([("id", pymongo.ASCENDING)])
-  for r in result:
-    store._update_leaderboard(store._history_to_leaderboard(r))
