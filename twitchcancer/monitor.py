@@ -33,8 +33,10 @@ class Sleeper():
           with urllib.request.urlopen('https://api.twitch.tv/kraken/streams/?limit=100') as response:
             data = json.loads(response.read().decode())
 
+            # TODO: stop monitoring dead streams
             for stream in data['streams']:
-              if stream['viewers'] > 1000:
+              # TODO: add this number as an option
+              if stream['viewers'] > 3000:
                 source = Twitch(stream['channel']['name'])
                 self.monitor(source)
 
