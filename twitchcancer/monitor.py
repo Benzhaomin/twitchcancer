@@ -17,28 +17,33 @@ from twitchcancer.source.twitch import Twitch
 
 # profiling: import yappi
 
-class Sleeper():
+class ResidentSleeper():
 
   def __init__(self):
-    self.storage = Storage(cron=True)
+    self.storage = Storage(master=True)
     self.queue = Queue()
     self.sources = []
 
+  # run the main thread, it'll auto add channels and mainly sleep
   def run(self, auto=True):
     try:
       while True:
         # auto monitor big streams
         if auto:
-          # synchronous HTTP request, fine because we'd sleep otherwise
-          with urllib.request.urlopen('https://api.twitch.tv/kraken/streams/?limit=100') as response:
-            data = json.loads(response.read().decode())
+          try:
+            # synchronous HTTP request, fine because we'd sleep otherwise
+            with urllib.request.urlopen('https://api.twitch.tv/kraken/streams/?limit=100') as response:
+              data = json.loads(response.read().decode())
 
-            # TODO: stop monitoring dead streams
-            for stream in data['streams']:
-              # TODO: add this number as an option
-              if stream['viewers'] > 3000:
-                source = Twitch(stream['channel']['name'])
-                self.monitor(source)
+              # TODO: stop monitoring dead streams
+              for stream in data['streams']:
+                # TODO: add this number as an option
+                if stream['viewers'] > 1000:
+                  source = Twitch(stream['channel']['name'])
+                  self.monitor(source)
+          except urllib.error.URLError:
+            # ignore the error, we'll try again next cycle
+            pass
 
         logger.info("cycle ran with %s sources up", len(self.sources))
 
@@ -48,13 +53,15 @@ class Sleeper():
       # flush db to disk
       pass
 
+  # starts a record cancer thread, used for storage I/O
   def record(self):
     t = Thread(target=_record_cancer, kwargs={'queue':self.queue, 'storage':self.storage})
     t.daemon = True
     t.start()
     logger.info("started record cancer thread")
 
-  # starts a monitor thread for the given source if it's not already running
+  # starts a monitor thread, used for network I/O
+  # TODO: turn self.sources into a dict with channel name as key and source + thread objects as values
   def monitor(self, source):
     if source in self.sources:
       return
@@ -65,7 +72,7 @@ class Sleeper():
     t.start()
     logger.info("started monitoring %s in thread %s", source.name(), t.name)
 
-# record cancer thread, 1 per Sleeper
+# compute and store cancer for each message, 1 thread per instance
 def _record_cancer(queue, storage):
   diagnosis = Diagnosis()
 
@@ -80,7 +87,7 @@ def _record_cancer(queue, storage):
     storage.store(channel, points)
     #logger.debug("Recorded cancer for channel %s", channel)
 
-# monitor source thread, 1 per source
+# eat what the source generates and put it into the record queue, 1 thread per source
 def _monitor_one(source, queue):
   # pass every message to the record queue
   for message in source:
@@ -89,9 +96,9 @@ def _monitor_one(source, queue):
 def monitor(sources):
   # profiling: yappi.start()
 
-  sleeper = Sleeper()
+  sleeper = ResidentSleeper()
 
-  # start the record thread
+  # start the record cancer thread
   sleeper.record()
 
   # start a monitoring thread for each source, if any
