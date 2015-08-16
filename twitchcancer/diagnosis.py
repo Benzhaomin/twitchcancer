@@ -29,7 +29,7 @@ class Diagnosis:
   def points(self, message):
     points = sum([s.points(message) for s in self.symptoms])
 
-    if points > 100:
+    if points > 200:
       if points > 1000:
         logger.info('very high score (%s) on %s', points, message)
       else:
