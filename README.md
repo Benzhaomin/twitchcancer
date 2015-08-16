@@ -10,6 +10,7 @@ For any live channel feature:
 
 To monitor and get the history of a channel:
 - PyMongo: https://pypi.python.org/pypi/pymongo
+- PyZMQ: https://github.com/zeromq/pyzmq
 
 To expose the history of a channel over HTTP:
 - Bottle: https://pypi.python.org/pypi/bottle
