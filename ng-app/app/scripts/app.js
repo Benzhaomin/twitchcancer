@@ -17,6 +17,7 @@ angular
     'ngRoute',
     'ngSanitize',
     'ngTouch',
+    'ngWebSocket',
     'ui.bootstrap',
     'twitchProfile'
   ])
