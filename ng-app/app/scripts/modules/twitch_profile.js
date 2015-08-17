@@ -24,6 +24,11 @@ angular
       $http.jsonp('https://api.twitch.tv/kraken/channels/'+channel.replace('#', '')+'?callback=JSON_CALLBACK').then(function(response) {
         $localStorage.profiles[channel] = response.data;
 
+        // the default avatar is null
+        // TODO: default values for other nullable fields
+        if (!$localStorage.profiles[channel]['logo']) {
+          $localStorage.profiles[channel]['logo'] = 'http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_300x300.png';
+        }
         console.log('[jsonp] finished loading ' + channel);
       }, function(err) {
         console.log('[jsonp] failed loading ' + channel);
