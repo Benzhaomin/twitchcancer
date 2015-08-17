@@ -15,6 +15,6 @@
   <tr ng-repeat='record in records track by record.channel'>
     <td>{{ record.channel }}</td>
     <td>{{ record.value | number:0}}</td>
-    <td title="{{ record.date | date: fullDate}}">{{ record.date | date: 'longDate' }}</td>
+    <td title="{{ record.date | date:'fullDate' }}">{{ record.date | date:'longDate' }}</td>
   </tr>
 </table>

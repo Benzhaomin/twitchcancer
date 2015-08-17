@@ -1,78 +1,81 @@
-<h1>Live Feed</h1>
+<h1 title="since a minute ago">Live Charts</h1>
 
-<div class="row">
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-cancer">Cancer</h2>
-    <bars-chart chart-data="live" chart-field="cancer"></bars-chart>
-  </div>
+<tabset justified="true">
 
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-messages">Messages</h2>
-    <bars-chart chart-data="live" chart-field="messages"></bars-chart>
-  </div>
+  <tab heading="Cancer points">
+      <bars-chart chart-data="live" chart-field="cancer"></bars-chart>
+  </tab>
 
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-cpm">Cancer per message</h2>
-    <bars-chart chart-data="live" chart-field="cpm"></bars-chart>
-  </div>
-</div>
+  <tab heading="Message count">
+      <bars-chart chart-data="live" chart-field="messages"></bars-chart>
+  </tab>
 
+  <tab heading="Points per message">
+      <bars-chart chart-data="live" chart-field="cpm"></bars-chart>
+  </tab>
+
+</tabset>
 
 <h1 title="since august 2015">Leaderboards</h1>
 
-<h2 title="short bursts of awesomeness">1 minute race</small></h2>
 
-<div class="row">
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-cancer">Cancer</h2>
-    <leaderboard profiles="profiles"board-data="leaderboards.cancer.minute" board-type="minute"></leaderboard>
-  </div>
+<tabset justified="true">
 
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-messages">Messages</h2>
-    <leaderboard profiles="profiles"board-data="leaderboards.messages.minute" board-type="minute"></leaderboard>
-  </div>
+  <tab heading="Cancer points">
+    <div class="row" tooltip="Raw quantity of chat cancer">
+      <div class="col-lg-4 col-md-6 col-xs-12">
+        <h3>Best minute <small>short burst</small></h3>
+        <leaderboard board-data="leaderboards.cancer.minute" board-type="minute"></leaderboard>
+      </div>
 
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-cpm">Cancer per message</h2>
-    <leaderboard profiles="profiles" board-data="leaderboards.cpm.minute" board-type="minute"></leaderboard>
-  </div>
-</div>
+      <div class="col-lg-4 col-md-6 col-xs-12">
+        <h3>Average <small>delivering everyday</small></h3>
+        <leaderboard board-data="leaderboards.cancer.average" board-type="average"></leaderboard>
+      </div>
 
-<h2 title="cancer hall-of-fame">Total</h2>
+      <div class="col-lg-4 col-md-6 col-xs-12">
+        <h3>Total <small>MLG</small></h3>
+        <leaderboard board-data="leaderboards.cancer.total" board-type="total"></leaderboard>
+      </div>
+    </div>
+  </tab>
 
-<div class="row">
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-cancer">Cancer</h2>
-    <leaderboard profiles="profiles" board-data="leaderboards.cancer.total" board-type="total"></leaderboard>
-  </div>
+  <tab heading="Message count">
+    <div class="row" tooltip="Raw quantity of messages sent">
+      <div class="col-lg-4 col-md-6 col-xs-12">
+        <h3>Best minute <small>short burst</small></h3>
+        <leaderboard board-data="leaderboards.messages.minute" board-type="minute"></leaderboard>
+      </div>
 
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-messages">Messages</h2>
-    <leaderboard profiles="profiles"board-data="leaderboards.messages.total" board-type="total"></leaderboard>
-  </div>
+      <div class="col-lg-4 col-md-6 col-xs-12">
+        <h3>Average <small>delivering everyday</small></h3>
+        <leaderboard board-data="leaderboards.messages.average" board-type="average"></leaderboard>
+      </div>
 
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-cpm">Cancer per message</h2>
-    <leaderboard profiles="profiles"board-data="leaderboards.cpm.total" board-type="total"></leaderboard>
-  </div>
-</div>
+      <div class="col-lg-4 col-md-6 col-xs-12">
+        <h3>Total <small>MLG</small></h3>
+        <leaderboard board-data="leaderboards.messages.total" board-type="total"></leaderboard>
+      </div>
+    </div>
+  </tab>
 
-<h2 title="delivering day-in day-out">Average</h2>
+  <tab heading="Points per message">
+    <div class="row" tooltip="Overall quality of the chat">
+      <div class="col-lg-4 col-md-6 col-xs-12">
+        <h3>Best minute <small>short burst</small></h3>
+        <leaderboard board-data="leaderboards.cpm.minute" board-type="minute"></leaderboard>
+      </div>
 
-<div class="row">
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-cancer">Cancer</h2>
-    <leaderboard profiles="profiles"board-data="leaderboards.cancer.average" board-type="average"></leaderboard>
-  </div>
+      <div class="col-lg-4 col-md-6 col-xs-12">
+        <h3>Average <small>delivering everyday</small></h3>
+        <leaderboard board-data="leaderboards.cpm.average" board-type="average"></leaderboard>
+      </div>
 
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-messages">Messages</h2>
-    <leaderboard profiles="profiles"board-data="leaderboards.messages.average" board-type="average"></leaderboard>
-  </div>
+      <div class="col-lg-4 col-md-6 col-xs-12">
+        <h3>Total <small>MLG</small></h3>
+        <leaderboard board-data="leaderboards.cpm.total" board-type="total"></leaderboard>
+      </div>
+    </div>
+  </tab>
 
-  <div class="col-lg-4 col-md-6 col-xs-12">
-    <h3 class="data-type data-type-cpm">Cancer per message</h2>
-    <leaderboard profiles="profiles"board-data="leaderboards.cpm.average" board-type="average"></leaderboard>
-  </div>
-</div>
+</tabset>
