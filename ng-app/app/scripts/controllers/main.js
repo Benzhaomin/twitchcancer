@@ -9,19 +9,28 @@
  */
 angular.module('twitchCancer')
   .controller('MainCtrl', function ($scope, $http, $websocket) {
-    // store live data for charting
-    //$scope.live = [];
-
-    var socket = $websocket('wss://localhost:8000/live');
+    var socket = $websocket('ws://localhost:8080');
 
     socket.onMessage(function(message) {
-      console.log(message);
+      var json = JSON.parse(message.data);
 
-      // add cancer per message
-      $scope.live = JSON.parse(message.data).channels.map(function(value) {
-        value['cpm'] = Math.round(value.cancer / value.messages * 100)/100;
-        return value;
-      });
+      if (json['topic'] === "twitchcancer.live") {
+        $scope.live = json['data'].map(function(value) {
+          // compute cancer per message
+          value['cpm'] = Math.round(value.cancer / value.messages * 100)/100;
+          return value;
+        });
+      }
+      else if (json['topic'] === "twitchcancer.leaderboards") {
+        $scope.leaderboards = json['data'];
+      }
+    });
+
+    socket.onOpen(function() {
+      console.log('socket opened');
+
+      socket.send('{"subscribe": "twitchcancer.live"}');
+      socket.send('{"subscribe": "twitchcancer.leaderboards"}');
     });
 
     socket.onClose(function() {
@@ -29,16 +38,12 @@ angular.module('twitchCancer')
 
       $scope.$apply(function() {
         $scope.live = []
+        $scope.leaderboards = []
       });
     });
 
     socket.onError(function(error) {
       console.error(error);
-    });
-
-    // load leaderboards
-    $http.get('http://localhost:8080/leaderboards').success(function(data) {
-      $scope.leaderboards = data;
     });
   })
   .directive('barsChart', function() {
@@ -53,9 +58,12 @@ angular.module('twitchCancer')
         scope.$watch('data', function() {
 
           if (typeof scope.data === 'undefined') {
-            chart.text("Loading...");
+            //chart.text("Loading...");
             return;
           }
+          /*else {
+            chart.text('');
+          }*/
 
           if (scope.data.len == 0) {
             chart.text("No data");
