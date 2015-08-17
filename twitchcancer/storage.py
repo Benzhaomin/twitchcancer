@@ -333,6 +333,12 @@ class Storage:
         'value': str(r["average"][what]),
       } for r in result]
 
+  # returns the rank of the value of a field
+  # eg. minute.cancer = 1200 => rank = 3
+  # @db.read
+  def _leaderboard_rank(self, field, value):
+    return self.db.leaderboard.find({field: {'$gte': value}}).count()
+
   # returns the personal records of a particular channel
   # @db.read
   def channel(self, channel):
@@ -342,6 +348,40 @@ class Storage:
       return {}
 
     result['channel'] = result['_id']
+
+    result['minute']['cancer']['rank'] = self._leaderboard_rank('minute.cancer.value', result['minute']['cancer']['value'])
+    result['minute']['messages']['rank'] = self._leaderboard_rank('minute.messages.value', result['minute']['messages']['value'])
+    result['minute']['cpm']['rank'] = self._leaderboard_rank('minute.cpm.value', result['minute']['cpm']['value'])
+
+    result['total']['cancer'] = {
+      'value': result['total']['cancer'],
+      'rank': self._leaderboard_rank('total.cancer', result['total']['cancer'])
+    }
+
+    result['total']['messages'] = {
+      'value': result['total']['messages'],
+      'rank': self._leaderboard_rank('total.messages', result['total']['messages'])
+    }
+
+    result['total']['cpm'] = {
+      'value': result['total']['cpm'],
+      'rank': self._leaderboard_rank('total.cpm', result['total']['cpm'])
+    }
+
+    result['average']['cancer'] = {
+      'value': result['total']['cancer'],
+      'rank': self._leaderboard_rank('average.cancer', result['average']['cancer'])
+    }
+
+    result['average']['messages'] = {
+      'value': result['total']['messages'],
+      'rank': self._leaderboard_rank('average.messages', result['average']['messages'])
+    }
+
+    result['average']['cpm'] = {
+      'value': result['total']['cpm'],
+      'rank': self._leaderboard_rank('average.cpm', result['average']['cpm'])
+    }
 
     return result
 
