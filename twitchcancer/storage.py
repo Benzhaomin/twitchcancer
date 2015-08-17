@@ -307,7 +307,7 @@ class Storage:
 
       return [{
         'channel': r["_id"],
-        'date': r["minute"][what]["date"].isoformat(),
+        'date': r["minute"][what]["date"],
         'value': str(r["minute"][what]["value"]),
       } for r in result]
 
@@ -318,7 +318,7 @@ class Storage:
 
       return [{
         'channel': r["_id"],
-        'date': r["total"]["date"].isoformat(),
+        'date': r["total"]["date"],
         'value': str(r["total"][what]),
       } for r in result]
 
@@ -329,10 +329,21 @@ class Storage:
 
       return [{
         'channel': r["_id"],
-        'date': r["total"]["date"].isoformat(),
+        'date': r["total"]["date"],
         'value': str(r["average"][what]),
       } for r in result]
 
+  # returns the personal records of a particular channel
+  # @db.read
+  def channel(self, channel):
+    result = self.db.leaderboard.find_one({'_id': channel})
+
+    if not result:
+      return {}
+
+    result['channel'] = result['_id']
+
+    return result
 
 import time
 
