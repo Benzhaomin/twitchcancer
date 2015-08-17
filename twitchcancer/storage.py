@@ -296,6 +296,21 @@ class Storage:
     else:
       return self._master_cancer()
 
+  # returns all leaderboards
+  def leaderboards(self):
+    metrics = ['cancer', 'messages', 'cpm']
+    intervals = ['minute', 'average', 'total']
+
+    result = {}
+
+    for metric in metrics:
+      result[metric] = {}
+
+      for interval in intervals:
+        result[metric][interval] = self.leaderboard(metric, interval)
+
+    return result
+
   # returns one of the leaderboards
   # @db.read
   def leaderboard(self, what, per):

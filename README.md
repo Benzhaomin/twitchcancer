@@ -12,8 +12,8 @@ To monitor and get the history of a channel:
 - PyMongo: https://pypi.python.org/pypi/pymongo
 - PyZMQ: https://github.com/zeromq/pyzmq
 
-To expose the history of a channel over HTTP:
-- Bottle: https://pypi.python.org/pypi/bottle
+To expose the live and leaderboard data over websockets:
+- autobahn: http://autobahn.ws/python/
 
 ## Usage
 
@@ -37,13 +37,14 @@ Long-running process used to record historical data on cancer level of several c
 
 `python twitchcancer/main.py monitor gamesdonequick forsenlol`
 
-### HTTP API
+### WebSocket API
 
-JSON API exposing live activity and leaderboards.
+WebSocket JSON API exposing live activity and leaderboards. Uses a simple Pub/Sub protocol.
 
-- run: `python twitchcancer/main.py history`
-- query: `curl 'http://localhost:8080/live'
-- query: `curl 'http://localhost:8080/leaderboards'
+- run: `python twitchcancer/main.py api` (see cli help for more options like port, etc)
+- connect to: 'ws://localhost:8080'
+- subscribe: `{'subscribe': 'topic'}'
+- unsubscribe: `{'unsubscribe': 'topic'}'
 
 # License
 
