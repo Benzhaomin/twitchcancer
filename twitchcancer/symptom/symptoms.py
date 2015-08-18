@@ -19,6 +19,16 @@ class Symptom:
   def points(self, message):
     return 0
 
+  # returns an object with more details about the message to avoid computation for each symptom
+  def precompute(message):
+    m = {
+      'text': message,
+      'length': len(message),
+      'words': message.split()
+    }
+    m['words_count'] = len(m['words'])
+    return m
+
 # message must have a minimum of {count} words
 class MinimumWordCount(Symptom):
 
@@ -29,7 +39,8 @@ class MinimumWordCount(Symptom):
 
   # every word missing = 1 point
   def points(self, message):
-    missing = self.count - len(message.split())
+
+    missing = self.count - message['words_count']
     if missing > 0:
       return missing
     return 0
@@ -44,7 +55,7 @@ class MinimumMessageLength(Symptom):
 
   # first character missing = 1 point, then every 3 characters missing = 1 point
   def points(self, message):
-    missing = self.length - len(message)
+    missing = self.length - message['length']
     if missing > 0:
       return 1 + int(missing / 3)
     return 0
@@ -59,7 +70,7 @@ class MaximumMessageLength(Symptom):
 
   # first character over the limit = 1 point, then every 5 characters = 1 point
   def points(self, message):
-    over = len(message) - self.length
+    over = message['length'] - self.length
     if over > 0:
       return 1 + int(over / 5)
     return 0
@@ -74,7 +85,7 @@ class CapsRatio(Symptom):
 
   # over the limit = 1 point, then every 0.5 ratio over the limit = 1 point
   def points(self, message):
-    ratio = sum(map(str.isupper, message)) / len(message)
+    ratio = sum(map(str.isupper, message['text'])) / message['length']
     over = ratio - self.ratio
     if over > 0:
       return 1 + int(over / 0.5)
@@ -95,12 +106,12 @@ class EmoteCount(Symptom):
   @classmethod
   def count(cls, message):
     count = 0
-    for w in message.split():
+    for w in message['words']:
       if w in cls.emotes:
         count += 1
     return count
     # slower
-    #return len([word for word in message.split() if word in cls.emotes])
+    #return len([word for word in message['words'] if word in cls.emotes])
 
   # over the limit = 1 point, then every 2 emotes = 1 point
   def points(self, message):
@@ -119,7 +130,7 @@ class EmoteRatio(Symptom):
 
   # over the limit = 1 point, then every 0.5 ratio over the limit = 1 point
   def points(self, message):
-    ratio = EmoteCount.count(message) / len(message.split())
+    ratio = EmoteCount.count(message) / message['words_count']
     over = ratio - self.ratio
     if over > 0:
       return 1 + int(over / 0.5)
@@ -145,7 +156,7 @@ class EmoteCountAndRatio(Symptom):
       points += 1 + int(over / 2)
 
     # EmoteRatio.points()
-    ratio = emotes_count / len(message.split())
+    ratio = emotes_count / message['words_count']
     over = ratio - self.ratio
     if over > 0:
       points += 1 + int(over / 0.5)
@@ -165,7 +176,7 @@ class BannedPhrase(Symptom):
   # one occurence of a banned phrase = 1 point
   def points(self, message):
     points = 0
-    message = message.lower()
+    message = message['text'].lower()
     for phrase in BannedPhrase.banned:
       if phrase in message: # optimization
         points += message.count(phrase)
@@ -181,14 +192,11 @@ class EchoingRatio(Symptom):
 
   # one duplicate word = 1 point
   def points(self, message):
-    words = message.split()
-    words_count = len(words)
-
     # a single word isn't echoing itself
-    if words_count == 1:
+    if message['words_count'] == 1:
       return 0
 
-    ratio = len(set(words)) / words_count
+    ratio = len(set(message['words'])) / message['words_count']
     over = self.ratio - ratio
     if over > 0:
       return 1 + int(over / 0.3)

@@ -5,15 +5,17 @@ import unittest
 
 from twitchcancer.symptom.symptoms import *
 
+p = Symptom.precompute
+
 messages = {
-  'sentence': 'this is a long sentence but not too long',
-  'oneemote': 'Kappa',
-  'onechar': 'k',
-  'oneword': 'Elephant',
-  'short': 'lol',
-  'emotesandwords': 'THIS Kappa IS Kappa WHAT Kappa I Kappa CALL Kappa MUSIC',
-  'longsentence': 'this is a long sentence but so long that it\s too long this is a long sentence but so long that it\s too long this is a long sentence but so long that it\s too long',
-  'caps': 'THATS A LOT OF Caps',
+  'sentence': p('this is a long sentence but not too long'),
+  'oneemote': p('Kappa'),
+  'onechar': p('k'),
+  'oneword': p('Elephant'),
+  'short': p('lol'),
+  'emotesandwords': p('THIS Kappa IS Kappa WHAT Kappa I Kappa CALL Kappa MUSIC'),
+  'longsentence': p('this is a long sentence but so long that it\s too long this is a long sentence but so long that it\s too long this is a long sentence but so long that it\s too long'),
+  'caps': p('THATS A LOT OF Caps'),
 }
 
 class TestSymptom(unittest.TestCase):
@@ -47,15 +49,15 @@ class TestMinimumWordCount(unittest.TestCase):
   # points()
   def test_minimum_word_count_points(self):
     s1 = MinimumWordCount()
-    self.assertEqual(s1.points("sentence"), 1)
-    self.assertEqual(s1.points("sentence words"), 0)
-    self.assertEqual(s1.points("sentence words words"), 0)
+    self.assertEqual(s1.points(p("sentence")), 1)
+    self.assertEqual(s1.points(p("sentence words")), 0)
+    self.assertEqual(s1.points(p("sentence words words")), 0)
 
     s2 = MinimumWordCount(3)
-    self.assertEqual(s2.points("sentence"), 2)
-    self.assertEqual(s2.points("sentence words"), 1)
-    self.assertEqual(s2.points("sentence words words"), 0)
-    self.assertEqual(s2.points("sentence words words words"), 0)
+    self.assertEqual(s2.points(p("sentence")), 2)
+    self.assertEqual(s2.points(p("sentence words")), 1)
+    self.assertEqual(s2.points(p("sentence words words")), 0)
+    self.assertEqual(s2.points(p("sentence words words words")), 0)
 
 # twitchcancer.symptom.symptoms.MinimumMessageLength
 class TestMinimumMessageLength(unittest.TestCase):
@@ -73,18 +75,18 @@ class TestMinimumMessageLength(unittest.TestCase):
   # points()
   def test_minimum_message_length_points(self):
     s1 = MinimumMessageLength()
-    self.assertEqual(s1.points("123456789012345"), 0)
-    self.assertEqual(s1.points("1234567890"), 0)
-    self.assertEqual(s1.points("12345"), 0)
-    self.assertEqual(s1.points("123"), 0)
-    self.assertEqual(s1.points("1"), 1)
+    self.assertEqual(s1.points(p("123456789012345")), 0)
+    self.assertEqual(s1.points(p("1234567890")), 0)
+    self.assertEqual(s1.points(p("12345")), 0)
+    self.assertEqual(s1.points(p("123")), 0)
+    self.assertEqual(s1.points(p("1")), 1)
 
     s2 = MinimumMessageLength(10)
-    self.assertEqual(s2.points("123456789012345"), 0)
-    self.assertEqual(s2.points("1234567890"), 0)
-    self.assertEqual(s2.points("12345"), 2)
-    self.assertEqual(s2.points("123"), 3)
-    self.assertEqual(s2.points("1"), 4)
+    self.assertEqual(s2.points(p("123456789012345")), 0)
+    self.assertEqual(s2.points(p("1234567890")), 0)
+    self.assertEqual(s2.points(p("12345")), 2)
+    self.assertEqual(s2.points(p("123")), 3)
+    self.assertEqual(s2.points(p("1")), 4)
 
 # twitchcancer.symptom.symptoms.MaximumMessageLength
 class TestMaximumMessageLength(unittest.TestCase):
@@ -102,13 +104,13 @@ class TestMaximumMessageLength(unittest.TestCase):
   # points()
   def test_maximum_message_length_points(self):
     s1 = MaximumMessageLength()
-    self.assertEqual(s1.points("1234567890"), 0)
-    self.assertEqual(s1.points("123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"), 3)
+    self.assertEqual(s1.points(p("1234567890")), 0)
+    self.assertEqual(s1.points(p("123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890")), 3)
 
     s2 = MaximumMessageLength(10)
-    self.assertEqual(s2.points("1234567890"), 0)
-    self.assertEqual(s2.points("1234567890123"), 1)
-    self.assertEqual(s2.points("123456789012345"), 2)
+    self.assertEqual(s2.points(p("1234567890")), 0)
+    self.assertEqual(s2.points(p("1234567890123")), 1)
+    self.assertEqual(s2.points(p("123456789012345")), 2)
 
 # twitchcancer.symptom.symptoms.CapsRatio
 class TestCapsRatio(unittest.TestCase):
@@ -126,22 +128,22 @@ class TestCapsRatio(unittest.TestCase):
   # points()
   def test_caps_ratio_points(self):
     s1 = CapsRatio()
-    self.assertEqual(s1.points("Foobar"), 0)
-    self.assertEqual(s1.points("FooBar"), 1)
-    self.assertEqual(s1.points("FOOBAR"), 2)
+    self.assertEqual(s1.points(p("Foobar")), 0)
+    self.assertEqual(s1.points(p("FooBar")), 1)
+    self.assertEqual(s1.points(p("FOOBAR")), 2)
 
     s2 = CapsRatio(1)
-    self.assertEqual(s2.points("FAHDASH DSAHDHAS"), 0)
-    self.assertEqual(s2.points("DASDASDA"), 0)
+    self.assertEqual(s2.points(p("FAHDASH DSAHDHAS")), 0)
+    self.assertEqual(s2.points(p("DASDASDA")), 0)
 
 # twitchcancer.symptom.symptoms.EmoteCount
 class TestEmoteCount(unittest.TestCase):
 
   # count()
   def test_emote_count_count(self):
-    self.assertEqual(EmoteCount.count('Kappa'), 1)
-    self.assertEqual(EmoteCount.count('notanemote'), 0)
-    self.assertEqual(EmoteCount.count('Kappa KappaPride Keepo'), 3)
+    self.assertEqual(EmoteCount.count(p('Kappa')), 1)
+    self.assertEqual(EmoteCount.count(p('notanemote')), 0)
+    self.assertEqual(EmoteCount.count(p('Kappa KappaPride Keepo')), 3)
 
   # exhibited_by()
   def test_emote_count_exhibited_by(self):
@@ -156,17 +158,17 @@ class TestEmoteCount(unittest.TestCase):
   # points()
   def test_emote_count_points(self):
     s1 = EmoteCount()
-    self.assertEqual(s1.points("Kappa"), 0)
-    self.assertEqual(s1.points("Kappa KappaPride"), 1)
-    self.assertEqual(s1.points("Kappa KappaPride Keepo"), 2)
-    self.assertEqual(s1.points("Kappa KappaPride Keepo Keepo"), 2)
-    self.assertEqual(s1.points("Kappa KappaPride Keepo Keepo KappaPride"), 3)
+    self.assertEqual(s1.points(p("Kappa")), 0)
+    self.assertEqual(s1.points(p("Kappa KappaPride")), 1)
+    self.assertEqual(s1.points(p("Kappa KappaPride Keepo")), 2)
+    self.assertEqual(s1.points(p("Kappa KappaPride Keepo Keepo")), 2)
+    self.assertEqual(s1.points(p("Kappa KappaPride Keepo Keepo KappaPride")), 3)
 
     s2 = EmoteCount(3)
-    self.assertEqual(s2.points("Kappa"), 0)
-    self.assertEqual(s2.points("Kappa KappaPride Keepo"), 0)
-    self.assertEqual(s2.points("Kappa KappaPride Keepo Keepo"), 1)
-    self.assertEqual(s2.points("Kappa KappaPride Keepo Keepo KappaPride KappaPride"), 2)
+    self.assertEqual(s2.points(p("Kappa")), 0)
+    self.assertEqual(s2.points(p("Kappa KappaPride Keepo")), 0)
+    self.assertEqual(s2.points(p("Kappa KappaPride Keepo Keepo")), 1)
+    self.assertEqual(s2.points(p("Kappa KappaPride Keepo Keepo KappaPride KappaPride")), 2)
 
 # twitchcancer.symptom.symptoms.EmoteRatio
 class TestEmoteRatio(unittest.TestCase):
@@ -184,18 +186,28 @@ class TestEmoteRatio(unittest.TestCase):
   # points()
   def test_emote_ratio_points(self):
     s1 = EmoteRatio()
-    self.assertEqual(s1.points("Foo"), 0)
-    self.assertEqual(s1.points("Kappa"), 2)
-    self.assertEqual(s1.points("Kappa test test"), 0)
-    self.assertEqual(s1.points("Kappa KappaPride Keepo"), 2)
-    self.assertEqual(s1.points("Kappa KappaPride Keepo Keepo"), 2)
-    self.assertEqual(s1.points("Kappa KappaPride Keepo Keepo KappaPride"), 2)
+    self.assertEqual(s1.points(p("Foo")), 0)
+    self.assertEqual(s1.points(p("Kappa")), 2)
+    self.assertEqual(s1.points(p("Kappa test test")), 0)
+    self.assertEqual(s1.points(p("Kappa KappaPride Keepo")), 2)
+    self.assertEqual(s1.points(p("Kappa KappaPride Keepo Keepo")), 2)
+    self.assertEqual(s1.points(p("Kappa KappaPride Keepo Keepo KappaPride")), 2)
 
     s2 = EmoteRatio(1)
-    self.assertEqual(s2.points("Kappa"), 0)
-    self.assertEqual(s2.points("Kappa KappaPride Keepo"), 0)
-    self.assertEqual(s2.points("Kappa KappaPride Keepo Keepo"), 0)
-    self.assertEqual(s2.points("Kappa KappaPride Keepo Keepo KappaPride KappaPride"), 0)
+    self.assertEqual(s2.points(p("Kappa")), 0)
+    self.assertEqual(s2.points(p("Kappa KappaPride Keepo")), 0)
+    self.assertEqual(s2.points(p("Kappa KappaPride Keepo Keepo")), 0)
+    self.assertEqual(s2.points(p("Kappa KappaPride Keepo Keepo KappaPride KappaPride")), 0)
+
+# TestEmoteCountAndRatio
+class TestEmoteCountAndRatio(unittest.TestCase):
+
+  # points()
+  def test_emote_count_points(self):
+    s1 = EmoteCountAndRatio()
+    self.assertEqual(s1.points(p("Kappa")), 2)
+    self.assertEqual(s1.points(p("Kappa KappaPride Keepo")), 4)
+    self.assertEqual(s1.points(p("Kappa KappaPride Keepo Keepo KappaPride")), 5)
 
 # twitchcancer.symptom.symptoms.BannedPhrase
 class TestBannedPhrase(unittest.TestCase):
@@ -204,16 +216,16 @@ class TestBannedPhrase(unittest.TestCase):
   def test_banned_phrase_exhibited_by(self):
     s = BannedPhrase()
 
-    self.assertFalse(s.exhibited_by("Darude"))
-    self.assertTrue(s.exhibited_by("Darude Sandstorm"))
+    self.assertFalse(s.exhibited_by(p("Darude")))
+    self.assertTrue(s.exhibited_by(p("Darude Sandstorm")))
 
   # points()
   def test_banned_phrase_points(self):
     s = BannedPhrase()
-    self.assertEqual(s.points("Kappa"), 0)
-    self.assertEqual(s.points("Darude sandstorm"), 1)
-    self.assertEqual(s.points("Darude sandstorm Darude sandstorm"), 2)
-    self.assertEqual(s.points("Darude sandstorm message deleted"), 2)
+    self.assertEqual(s.points(p("Kappa")), 0)
+    self.assertEqual(s.points(p("Darude sandstorm")), 1)
+    self.assertEqual(s.points(p("Darude sandstorm Darude sandstorm")), 2)
+    self.assertEqual(s.points(p("Darude sandstorm message deleted")), 2)
 
 # twitchcancer.symptom.symptoms.EchoingRatio
 class TestEchoingRatio(unittest.TestCase):
@@ -222,15 +234,15 @@ class TestEchoingRatio(unittest.TestCase):
   def test_echoing_ratio_exhibited_by(self):
     s = EchoingRatio()
 
-    self.assertFalse(s.exhibited_by("lol"))
-    self.assertFalse(s.exhibited_by("foo bar"))
-    self.assertTrue(s.exhibited_by("lol lol"))
+    self.assertFalse(s.exhibited_by(p("lol")))
+    self.assertFalse(s.exhibited_by(p("foo bar")))
+    self.assertTrue(s.exhibited_by(p("lol lol")))
 
   # points()
   def test_echoing_ratio_points(self):
     s = EchoingRatio()
-    self.assertEqual(s.points("lol"), 0)
-    self.assertEqual(s.points("lol lol"), 1)
-    self.assertEqual(s.points("lol lol lol"), 2)
-    self.assertEqual(s.points("lol lol lol lol"), 2)
-    self.assertEqual(s.points("lol rekt lol rekt"), 1)
+    self.assertEqual(s.points(p("lol")), 0)
+    self.assertEqual(s.points(p("lol lol")), 1)
+    self.assertEqual(s.points(p("lol lol lol")), 2)
+    self.assertEqual(s.points(p("lol lol lol lol")), 2)
+    self.assertEqual(s.points(p("lol rekt lol rekt")), 1)
