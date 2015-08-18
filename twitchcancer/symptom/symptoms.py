@@ -119,6 +119,33 @@ class EmoteRatio(Symptom):
       return 1 + int(over / 0.5)
     return 0
 
+# applies emote count and emote ratio in the same call to avoid counting emotes twice
+class EmoteCountAndRatio(Symptom):
+
+  def __init__(self, count=1, ratio=0.49):
+    super().__init__()
+
+    self._count = count
+    self.ratio = ratio
+
+  # over the limit = 1 point, then every 0.5 ratio over the limit = 1 point
+  def points(self, message):
+    emotes_count = EmoteCount.count(message)
+    points = 0
+
+    # EmoteCount.points()
+    over = emotes_count - self._count
+    if over > 0:
+      points += 1 + int(over / 2)
+
+    # EmoteRatio.points()
+    ratio = emotes_count / len(message.split())
+    over = ratio - self.ratio
+    if over > 0:
+      points += 1 + int(over / 0.5)
+
+    return points
+
 # message can't contain any of the banned phrases
 class BannedPhrase(Symptom):
 
@@ -127,14 +154,15 @@ class BannedPhrase(Symptom):
 
   # class variable: load a list of all the banned phrases
   with open(os.path.join(os.path.dirname(__file__), 'banned.txt')) as banned_file:
-    banned = banned_file.read().splitlines()
+    banned = set(map(str.lower, banned_file.read().splitlines()))
 
   # one occurence of a banned phrase = 1 point
   def points(self, message):
     points = 0
     message = message.lower()
     for phrase in BannedPhrase.banned:
-      points += message.count(phrase.lower())
+      if phrase in message: # optimization
+        points += message.count(phrase)
     return points
 
 # message can't be a single word echoing too often
