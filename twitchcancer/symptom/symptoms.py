@@ -165,6 +165,8 @@ class BannedPhrase(Symptom):
         points += message.count(phrase)
     return points
 
+import re
+
 # message can't be a single word echoing too often
 class EchoingRatio(Symptom):
 
@@ -176,12 +178,13 @@ class EchoingRatio(Symptom):
   # one duplicate word = 1 point
   def points(self, message):
     words = message.split()
+    words_count = len(words)
 
     # a single word isn't echoing itself
-    if len(words) == 1:
+    if words_count == 1:
       return 0
 
-    ratio = len(set(words)) / len(words)
+    ratio = len(set(words)) / words_count
     over = self.ratio - ratio
     if over > 0:
       return 1 + int(over / 0.3)
