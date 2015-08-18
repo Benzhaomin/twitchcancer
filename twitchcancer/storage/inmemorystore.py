@@ -62,14 +62,14 @@ class InMemoryStore:
           logger.info('archive ate all the messages, meaning we got no message in the last minute')
           break
 
+        # group messages by minute
+        message['date'] = message['date'].replace(second=0, microsecond=0)
+
         # stop if the message is too new
-        if message['date'].replace(second=0, microsecond=0) >= breakpoint:
+        if message['date'] >= breakpoint:
           self.messages.appendleft(message)
           logger.debug('archiving loop stopped at message %s', message['date'])
           break
-
-        # group messages by minute
-        message['date'] = message['date'].replace(second=0, microsecond=0)
 
         # defaultdict builds everything as needed
         history[message['date']][message['channel']]['cancer'] += message['cancer']
