@@ -94,7 +94,13 @@ class EmoteCount(Symptom):
 
   @classmethod
   def count(cls, message):
-    return len([word for word in message.split() if word in EmoteCount.emotes])
+    count = 0
+    for w in message.split():
+      if w in cls.emotes:
+        count += 1
+    return count
+    # slower
+    #return len([word for word in message.split() if word in cls.emotes])
 
   # over the limit = 1 point, then every 2 emotes = 1 point
   def points(self, message):
@@ -164,8 +170,6 @@ class BannedPhrase(Symptom):
       if phrase in message: # optimization
         points += message.count(phrase)
     return points
-
-import re
 
 # message can't be a single word echoing too often
 class EchoingRatio(Symptom):
