@@ -29,7 +29,7 @@ class MinimumWordCount(Symptom):
 
   # every word missing = 1 point
   def points(self, message):
-    missing = self.count - len(message.strip().split())
+    missing = self.count - len(message.split())
     if missing > 0:
       return missing
     return 0
@@ -44,7 +44,7 @@ class MinimumMessageLength(Symptom):
 
   # first character missing = 1 point, then every 3 characters missing = 1 point
   def points(self, message):
-    missing = self.length - len(message.strip())
+    missing = self.length - len(message)
     if missing > 0:
       return 1 + int(missing / 3)
     return 0
@@ -59,7 +59,7 @@ class MaximumMessageLength(Symptom):
 
   # first character over the limit = 1 point, then every 5 characters = 1 point
   def points(self, message):
-    over = len(message.strip()) - self.length
+    over = len(message) - self.length
     if over > 0:
       return 1 + int(over / 5)
     return 0
@@ -74,7 +74,7 @@ class CapsRatio(Symptom):
 
   # over the limit = 1 point, then every 0.5 ratio over the limit = 1 point
   def points(self, message):
-    ratio = len([c for c in message.strip() if c.isupper()]) / len(message.strip())
+    ratio = len([c for c in message if c.isupper()]) / len(message)
     over = ratio - self.ratio
     if over > 0:
       return 1 + int(over / 0.5)
@@ -94,7 +94,7 @@ class EmoteCount(Symptom):
 
   @classmethod
   def count(cls, message):
-    return len([word for word in message.strip().split() if word in EmoteCount.emotes])
+    return len([word for word in message.split() if word in EmoteCount.emotes])
 
   # over the limit = 1 point, then every 2 emotes = 1 point
   def points(self, message):
@@ -113,7 +113,7 @@ class EmoteRatio(Symptom):
 
   # over the limit = 1 point, then every 0.5 ratio over the limit = 1 point
   def points(self, message):
-    ratio = EmoteCount.count(message) / len(message.strip().split())
+    ratio = EmoteCount.count(message) / len(message.split())
     over = ratio - self.ratio
     if over > 0:
       return 1 + int(over / 0.5)
