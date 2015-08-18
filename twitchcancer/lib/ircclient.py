@@ -8,6 +8,23 @@ logger = logging.getLogger(__name__)
 
 import irc.client
 
+class IRCClientLogger(logging.Logger):
+
+  # ignore log
+  def log(self, *args, **kwargs):
+    pass
+
+  # ignore info
+  def info(self, *args, **kwargs):
+    pass
+
+  # ignore debug
+  def debug(self, *args, **kwargs):
+    pass
+
+# monkey-patch irc.client's logger to avoid n (>5) useless calls to the logger per message
+irc.client.log = IRCClientLogger(irc.client.log.name)
+
 class IRCClient(irc.client.SimpleIRCClient):
 
   def __init__(self, config):
