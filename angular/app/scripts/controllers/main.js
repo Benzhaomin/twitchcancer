@@ -10,9 +10,11 @@
 angular.module('twitchCancer')
   .controller('MainCtrl', function ($scope, $http, $websocket) {
     var socket = $websocket('ws://localhost:8080');
+    socket.reconnectIfNotNormalClose = true;
 
     socket.onMessage(function(message) {
       var json = JSON.parse(message.data);
+      //console.log(message);
 
       if (json['topic'] === "twitchcancer.live") {
         $scope.live = json['data'].map(function(value) {
@@ -35,11 +37,6 @@ angular.module('twitchCancer')
 
     socket.onClose(function() {
       console.warn('socket closed');
-
-      $scope.$apply(function() {
-        $scope.live = []
-        $scope.leaderboards = []
-      });
     });
 
     socket.onError(function(error) {
