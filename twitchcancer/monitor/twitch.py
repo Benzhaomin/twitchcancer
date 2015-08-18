@@ -16,7 +16,7 @@ class Twitch(IRC):
   # use the default config with a custom server/port depending on the channel
   def _get_irc_config(self):
     config = super()._get_irc_config()
-    config['server'], config['port'] = self.get_server(self.channel.strip('#'))
+    config['server'], config['port'] = self.get_server(self.name.strip('#'))
     return config
 
   @classmethod

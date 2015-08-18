@@ -25,7 +25,7 @@ class ResidentSleeper():
     self.sources = []
 
   # run the main thread, it'll auto add channels and mainly sleep
-  def run(self, auto=True):
+  def run(self):
     try:
       while True:
         try:
@@ -48,7 +48,6 @@ class ResidentSleeper():
         # wait until our next cycle
         time.sleep(60)
     except KeyboardInterrupt:
-      # flush db to disk
       pass
 
   # starts a record cancer thread, used for storage I/O
@@ -65,10 +64,10 @@ class ResidentSleeper():
       return
     self.sources.append(source)
 
-    t = Thread(name="Thread-"+source.name(), target=_monitor_one, kwargs={'source':source, 'queue':self.queue})
+    t = Thread(name="Thread-"+source.name, target=_monitor_one, kwargs={'source':source, 'queue':self.queue})
     t.daemon = True
     t.start()
-    logger.info("started monitoring %s in thread %s", source.name(), t.name)
+    logger.info("started monitoring %s in thread %s", source.name, t.name)
 
 # compute and store cancer for each message, 1 thread per instance
 def _record_cancer(queue, storage):
@@ -89,7 +88,7 @@ def _record_cancer(queue, storage):
 def _monitor_one(source, queue):
   # pass every message to the record queue
   for message in source:
-    queue.put((source.name(), message))
+    queue.put((source.name, message))
 
 def run(args):
   # profiling: yappi.start()

@@ -19,7 +19,9 @@ class IRC(Source):
     # irc channel to join
     if not channel.startswith('#'):
       channel = '#' + channel
-    self.channel = channel
+
+    # identify us by our channel name (conflicts cross-servers but whatever)
+    self.name = channel
     self.messages = None
 
   # initialize runtime things when we actually need to
@@ -32,15 +34,11 @@ class IRC(Source):
     t.daemon = True
     t.start()
 
-    logger.debug('started a client thread for %s', self.channel);
+    logger.debug('started a client thread for %s', self.name);
 
   # we are iterable
   def __iter__(self):
     return self
-
-  # identify us by our channel name (conflicts cross-servers but whatever)
-  def name(self):
-    return self.channel
 
   # return the first unread message in the queue or blocks waiting for one
   def __next__(self):
@@ -61,7 +59,7 @@ class IRC(Source):
   def _client_thread(self):
     c = IRCClient(self._get_irc_config())
     c.call_on_pubmsg = self._on_pubmsg
-    c.join(self.channel)
+    c.join(self.name)
     c.start()
 
   # add messages we received to the queue
