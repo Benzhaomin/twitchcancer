@@ -36,33 +36,3 @@ class Diagnosis:
         logger.debug('high score (%s) on %s', points, message)
 
     return points
-
-  # run a full diagnosis of a source
-  def full_diagnosis(self, source):
-    sane = 0
-    ill = 0
-
-    for message in source:
-      symptoms = self.diagnose(message)
-
-      if len(symptoms) == 0 :
-        sane += 1
-        logger.debug('sane: %s', message.strip())
-      else:
-        ill += 1
-        logger.debug('ill (%s): %s', ', '.join(map(str, symptoms)), message.strip())
-
-    print("messages {total}, sane {sane}, ill {ill} ".format(total=(ill+sane), sane=sane, ill=ill))
-    print("health {health:.2f}% ".format(health=100*sane/(ill+sane)))
-
-from twitchcancer.source.log import Log
-from twitchcancer.source.twitch import Twitch
-
-if __name__ == "__main__":
-  logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
-
-  #with open(os.path.join(os.path.dirname(__file__), '../tests/destiny.log')) as destiny:
-  #  source = Log(destiny.readlines())
-  source = Twitch('#gamesdonequick')
-
-  Diagnosis().full_diagnosis(source)

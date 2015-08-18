@@ -6,7 +6,7 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 
-from twitchcancer.source.irc import IRC
+from twitchcancer.monitor.irc import IRC
 
 class Twitch(IRC):
 

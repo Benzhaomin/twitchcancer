@@ -3,7 +3,7 @@
 
 import unittest
 
-from twitchcancer.diagnosis import Diagnosis
+from twitchcancer.symptom.diagnosis import Diagnosis
 
 # twitchcancer.diagnosis.Diagnosis.__init__()
 class TestDiagnosisInit(unittest.TestCase):

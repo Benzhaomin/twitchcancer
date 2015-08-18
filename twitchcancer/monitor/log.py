@@ -4,7 +4,7 @@
 import logging
 logger = logging.getLogger(__name__)
 
-from twitchcancer.source.source import Source
+from twitchcancer.monitor.source import Source
 
 # channel log, messages come from a local source as fast as possible
 class Log(Source):

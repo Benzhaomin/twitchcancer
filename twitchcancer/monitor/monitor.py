@@ -11,9 +11,9 @@ queue = Queue()
 import logging
 logger = logging.getLogger(__name__)
 
-from twitchcancer.diagnosis import Diagnosis
+from twitchcancer.symptom.diagnosis import Diagnosis
 from twitchcancer.storage.storage import Storage
-from twitchcancer.source.twitch import Twitch
+from twitchcancer.monitor.twitch import Twitch
 
 # profiling: import yappi
 
@@ -28,22 +28,20 @@ class ResidentSleeper():
   def run(self, auto=True):
     try:
       while True:
-        # auto monitor big streams
-        if auto:
-          try:
-            # synchronous HTTP request, fine because we'd sleep otherwise
-            with urllib.request.urlopen('https://api.twitch.tv/kraken/streams/?limit=100') as response:
-              data = json.loads(response.read().decode())
+        try:
+          # synchronous HTTP request, fine because we'd sleep otherwise
+          with urllib.request.urlopen('https://api.twitch.tv/kraken/streams/?limit=100') as response:
+            data = json.loads(response.read().decode())
 
-              # TODO: stop monitoring dead streams
-              for stream in data['streams']:
-                # TODO: add this number as an option
-                if stream['viewers'] > 1000:
-                  source = Twitch(stream['channel']['name'])
-                  self.monitor(source)
-          except urllib.error.URLError:
-            # ignore the error, we'll try again next cycle
-            pass
+            # TODO: stop monitoring dead streams
+            for stream in data['streams']:
+              # TODO: add this number as an option
+              if stream['viewers'] > 1000:
+                source = Twitch(stream['channel']['name'])
+                self.monitor(source)
+        except urllib.error.URLError:
+          # ignore the error, we'll try again next cycle
+          pass
 
         logger.info("cycle ran with %s sources up", len(self.sources))
 
@@ -93,7 +91,7 @@ def _monitor_one(source, queue):
   for message in source:
     queue.put((source.name(), message))
 
-def monitor(sources):
+def run(args):
   # profiling: yappi.start()
 
   sleeper = ResidentSleeper()
@@ -101,16 +99,8 @@ def monitor(sources):
   # start the record cancer thread
   sleeper.record()
 
-  # start a monitoring thread for each source, if any
-  for source in sources:
-    sleeper.monitor(source)
-
-  # run the main thread, it'll auto add sources if we don't have any
-  sleeper.run(auto=(len(sources) == 0))
+  # run the main thread
+  sleeper.run()
 
   # profiling: yappi.get_func_stats().print_all()
   # profiling: yappi.get_thread_stats().print_all()
-
-def record(args):
-  storage = Storage()
-  storage.record()

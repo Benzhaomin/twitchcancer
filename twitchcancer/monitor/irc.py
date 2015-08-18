@@ -6,9 +6,9 @@ import threading
 import logging
 logger = logging.getLogger(__name__)
 
-from twitchcancer.source.ircconfig import config as CONFIG
 from twitchcancer.lib.ircclient import IRCClient
-from twitchcancer.source.source import Source
+from twitchcancer.monitor.ircconfig import config as CONFIG
+from twitchcancer.monitor.source import Source
 
 # live channel, messages come in as time goes
 class IRC(Source):

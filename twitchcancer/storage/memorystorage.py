@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 # ZeroMQ
 import zmq
 
-from twitchcancer.cron import Cron
+from twitchcancer.utils.cron import Cron
 from twitchcancer.storage.inmemorystore import InMemoryStore
 from twitchcancer.storage.storageinterface import StorageInterface
 from twitchcancer.storage.storage import Storage
