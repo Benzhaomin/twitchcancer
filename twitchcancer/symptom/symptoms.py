@@ -74,7 +74,7 @@ class CapsRatio(Symptom):
 
   # over the limit = 1 point, then every 0.5 ratio over the limit = 1 point
   def points(self, message):
-    ratio = len([c for c in message if c.isupper()]) / len(message)
+    ratio = sum(map(str.isupper, message)) / len(message)
     over = ratio - self.ratio
     if over > 0:
       return 1 + int(over / 0.5)
