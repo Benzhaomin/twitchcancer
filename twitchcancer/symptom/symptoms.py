@@ -90,7 +90,7 @@ class EmoteCount(Symptom):
 
   # class variable: load a list of all the emotes
   with open(os.path.join(os.path.dirname(__file__), 'emotes.txt')) as emotes_file:
-    emotes = emotes_file.read().splitlines()
+    emotes = set(emotes_file.read().splitlines())
 
   @classmethod
   def count(cls, message):
