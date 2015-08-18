@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from twitchcancer.diagnosis import Diagnosis
-from twitchcancer.storage import Storage
+from twitchcancer.storage.storage import Storage
 from twitchcancer.source.twitch import Twitch
 
 # profiling: import yappi
@@ -20,7 +20,7 @@ from twitchcancer.source.twitch import Twitch
 class ResidentSleeper():
 
   def __init__(self):
-    self.storage = Storage(master=True)
+    self.storage = Storage()
     self.queue = Queue()
     self.sources = []
 
@@ -110,3 +110,7 @@ def monitor(sources):
 
   # profiling: yappi.get_func_stats().print_all()
   # profiling: yappi.get_thread_stats().print_all()
+
+def record(args):
+  storage = Storage()
+  storage.record()

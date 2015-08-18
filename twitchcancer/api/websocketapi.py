@@ -10,7 +10,7 @@ from autobahn.asyncio.websocket import WebSocketServerFactory
 from twitchcancer.api.pubsubprotocol import PubSubProtocol
 from twitchcancer.api.pubsubtopic import PubSubTopic
 from twitchcancer.api.pubsubmanager import PubSubManager
-from twitchcancer.storage import Storage
+from twitchcancer.storage.storage import Storage
 
 # regularly publish data for a topic
 @asyncio.coroutine
