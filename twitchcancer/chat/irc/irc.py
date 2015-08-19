@@ -6,22 +6,18 @@ import threading
 import logging
 logger = logging.getLogger(__name__)
 
-from twitchcancer.lib.ircclient import IRCClient
-from twitchcancer.monitor.ircconfig import config as CONFIG
-from twitchcancer.monitor.source import Source
+from twitchcancer.chat.irc.ircclient import IRCClient
+from twitchcancer.chat.config import config as CONFIG
 
-# live channel, messages come in as time goes
-class IRC(Source):
+# connect to a server, messages come in as time goes
+class IRC:
 
-  def __init__(self, channel):
+  def __init__(self, host, port):
     super().__init__()
 
-    # irc channel to join
-    if not channel.startswith('#'):
-      channel = '#' + channel
-
-    # identify us by our channel name (conflicts cross-servers but whatever)
-    self.name = channel
+    self.host = host
+    self.port = port
+    self.name = host
     self.messages = None
 
   # initialize runtime things when we actually need to
@@ -30,7 +26,9 @@ class IRC(Source):
     self.messages = queue.Queue()
 
     # run network communication in a background thread
-    t = threading.Thread(target=self._client_thread)
+    self.client = IRCClient(self._get_irc_config())
+
+    t = threading.Thread(target=self._client_thread, kwargs={'client': self.client})
     t.daemon = True
     t.start()
 
@@ -53,21 +51,28 @@ class IRC(Source):
 
   # returns the config to use for our IRC client
   def _get_irc_config(self):
-    return CONFIG
+    config =  CONFIG
+
+    config['server'] = self.host
+    config['port'] = int(self.port)
+
+    return config
+
+  def join(self, channel):
+    self.client.join('#'+channel)
 
   # background thread to handle all IRC communication
-  def _client_thread(self):
-    c = IRCClient(self._get_irc_config())
-    c.call_on_pubmsg = self._on_pubmsg
-    c.join(self.name)
-    c.start()
+  def _client_thread(self, client):
+    client.call_on_pubmsg = self._on_pubmsg
+    client._connect()
+    client.start()
 
   # add messages we received to the queue
   # called from the client thread
-  def _on_pubmsg(self, message):
+  def _on_pubmsg(self, channel, message):
     message = message.strip()
     if len(message) > 0:
-      self.messages.put(message)
+      self.messages.put((channel, message))
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')

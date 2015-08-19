@@ -35,7 +35,7 @@ class MemoryStorage(StorageInterface):
     # publish a summary of all cancer messages grouped by minute and channel
     self.zmq_context = zmq.Context()
     self.pubsub_socket = self.zmq_context.socket(zmq.PUB)
-    self.pubsub_socket.bind(Storage.SUMMARY_SOCKET_URI)
+    #self.pubsub_socket.bind(Storage.SUMMARY_SOCKET_URI)
     logger.debug("bound publish socket to %s", Storage.SUMMARY_SOCKET_URI)
 
     # respond to live cancer requests
