@@ -1,50 +1,80 @@
 # TwitchCancer
 
-Toolbox targeted at diagnosing, curing, monitoring and recording historical data
-about chat cancer on Twitch.
+Suite of tool targeted at diagnosing, monitoring and recording data about chat cancer on Twitch.
 
-## Requirements
+These 4 components run independently from each other and communicate through ZeroMQ sockets and WebSockets. Any single one can be restarted or down, the others will reconnect when possible.
 
-For any live channel feature:
+## Monitor
+
+### Goal
+
+- join chat channels on Twitch (IRC or WebSocket)
+- compute cancer points for each message based on a cancer diagnosis
+- store these in-memory and publish reports every minute on a ZeroMQ socket
+
+### Requirements
+
 - IRC: https://pypi.python.org/pypi/irc
+or
+- Asyncio (Python 3.4+)
+- AutoBahn: http://autobahn.ws/python
 
-To monitor and get the history of a channel:
+- PyZMQ: https://github.com/zeromq/pyzmq
+
+### Usage
+
+See `python scripts/monitor.py -h`
+
+## Record
+
+### Goal
+
+- subscribe to the monitoring socket
+- update persistent leaderboards with new data (MongoDB)
+
+### Requirements
+
 - PyMongo: https://pypi.python.org/pypi/pymongo
 - PyZMQ: https://github.com/zeromq/pyzmq
 
-To expose the live and leaderboard data over websockets:
-- autobahn: http://autobahn.ws/python/
+### Usage
 
-## Usage
+See `python scripts/record.py -h`
 
-### Diagnose
+## Expose
 
-Runs a quick diagnosis of a source, prints stats about its cancer status.
+### Goal
 
-- live chat channel: `python twitchcancer/main.py diagnose gamesdonequick`
-- log file: `cat chat.log | python twitchcancer/main.py diagnose`
+- push live cancer status (every second) and leaderboards (every minute), Pub/Sub WebSocket API
 
-### Cure
+### Usage
 
-Filters cancer messages out of a chat.
+See `python scripts/api.py -h`
 
-- live chat channel: `python twitchcancer/main.py cure gamesdonequick`
-- log file: `cat chat.log | python twitchcancer/main.py cure`
-
-### Monitor
-
-Long-running process used to record historical data on cancer level of several channels.
-
-`python twitchcancer/main.py monitor gamesdonequick forsenlol`
-
-### WebSocket API
-
-WebSocket JSON API exposing live activity and leaderboards. Uses a simple Pub/Sub protocol.
-
-- run: `python twitchcancer/main.py api` (see cli help for more options like port, etc)
 - connect to: 'ws://localhost:8080'
 - subscribe: `{'subscribe': 'topic'}'
 - unsubscribe: `{'unsubscribe': 'topic'}'
+
+### Requirements
+
+- PyMongo: https://pypi.python.org/pypi/pymongo
+- PyZMQ: https://github.com/zeromq/pyzmq
+
+
+## Explore
+
+### Goal
+
+- website to display live data (AngularJS)
+- subscribe to the Pub/Sub API to always be up-to-date
+
+### Requirements
+
+- grunt
+
+### Usage
+
+TODO
 
 # License
 
