@@ -55,10 +55,6 @@ class AsyncWebSocketMonitor(Monitor):
     coro = self.loop.create_connection(factory, ip, port)
     yield from coro
 
-  # store the client object connected to a server
-  def connected(self, server, client):
-    pass
-
   # join a channel
   @asyncio.coroutine
   def join(self, channel):
@@ -76,10 +72,6 @@ class AsyncWebSocketMonitor(Monitor):
     # join the channel
     logger.debug("will join %s on %s", channel, server)
     yield from self.servers[server].client.join(channel)
-
-  # save the name of channel we joigned to avoid joining it again
-  def joined(self, server, channel):
-    pass
 
   # leave a channel
   def leave(self, channel):

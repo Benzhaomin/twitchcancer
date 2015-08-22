@@ -18,18 +18,10 @@ class Monitor():
     # don't connect to the same server twice
     pass
 
-  # store the client object connected to a server
-  def connected(self, server, client):
-    pass
-
   # join a channel
   def join(self, channel):
     # don't join the same channel twice
     # use self.find_server()
-    pass
-
-  # save the name of channel we joigned to avoid joining it again
-  def joined(self, server, channel):
     pass
 
   # leave a channel

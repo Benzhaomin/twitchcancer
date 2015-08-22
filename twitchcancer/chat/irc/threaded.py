@@ -80,10 +80,6 @@ class ThreadedIRCMonitor(Monitor):
     logger.debug("will join %s on %s", channel, server)
     self.servers[server].join(channel)
 
-  # save the name of channel we joigned to avoid joining it again
-  def joined(self, server, channel):
-    pass
-
   # leave a channel
   def leave(self, channel):
     pass
