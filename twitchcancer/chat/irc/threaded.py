@@ -34,8 +34,6 @@ class ThreadedIRCMonitor(Monitor):
 
         logger.info("cycle ran with %s servers and %s channels over %s viewers up", len(self.servers), len(self.channels), self.viewers)
 
-        print(self.channels)
-
         # wait until our next cycle
         time.sleep(60)
     except KeyboardInterrupt:
