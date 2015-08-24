@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from twitchcancer.chat.irc.ircclient import IRCClient
-from twitchcancer.chat.config import config as CONFIG
+from twitchcancer.config import Config
 
 # connect to a server, messages come in as time goes
 class IRC:
@@ -51,12 +51,12 @@ class IRC:
 
   # returns the config to use for our IRC client
   def _get_irc_config(self):
-    config =  CONFIG
-
-    config['server'] = self.host
-    config['port'] = int(self.port)
-
-    return config
+    return {
+      'username': Config.get("monitor.chat.username"),
+      'password': Config.get("monitor.chat.password"),
+      'server': self.host,
+      'port': int(self.port)
+    }
 
   def join(self, channel):
     self.client.join(channel)

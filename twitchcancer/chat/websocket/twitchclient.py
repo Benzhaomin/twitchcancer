@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 from autobahn.asyncio.websocket import WebSocketClientProtocol
 
-from twitchcancer.chat.config import config as CONFIG
+from twitchcancer.config import Config
 from twitchcancer.symptom.diagnosis import Diagnosis
 from twitchcancer.storage.storage import Storage
 
@@ -28,8 +28,8 @@ class TwitchClient(WebSocketClientProtocol):
 
   def onOpen(self):
     self.sendMessage('CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership'.encode());
-    self.sendMessage('PASS {0}'.format(CONFIG['password'].lower()).encode());
-    self.sendMessage('NICK {0}'.format(CONFIG['username'].lower()).encode());
+    self.sendMessage('PASS {0}'.format(Config.get("monitor.chat.password").lower()).encode());
+    self.sendMessage('NICK {0}'.format(Config.get("monitor.chat.username").lower()).encode());
 
     for channel in self.channels:
       self.sendMessage('JOIN {0}'.format(channel).encode());

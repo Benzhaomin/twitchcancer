@@ -5,6 +5,7 @@ import argparse
 import logging
 logger = logging.getLogger('twitchcancer')
 
+from twitchcancer.config import Config
 from twitchcancer.chat.chat import run
 
 if __name__ == "__main__":
@@ -13,6 +14,9 @@ if __name__ == "__main__":
 
   parser.add_argument('--log', dest='loglevel', default='WARNING',
     help="set the level of messages to display")
+
+  parser.add_argument('-f', '--config', dest='config',
+    help="load configuration from this file")
 
   parser.add_argument('--viewers', dest='viewers', default=1000, type=int,
     help="minimum viewer count to monitor channels (default: 1000)")
@@ -29,6 +33,10 @@ if __name__ == "__main__":
 
   logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
   logger.setLevel(numeric_level)
+
+  # load the config
+  if args.config:
+    Config.load(args.config)
 
   # start recording forever
   run(args)

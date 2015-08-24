@@ -9,10 +9,10 @@ logger = logging.getLogger(__name__)
 # ZeroMQ
 import zmq
 
+from twitchcancer.config import Config
 from twitchcancer.utils.cron import Cron
 from twitchcancer.storage.inmemorystore import InMemoryStore
 from twitchcancer.storage.storageinterface import StorageInterface
-from twitchcancer.storage.storage import Storage
 
 #
 # handle the message stream: store new messages in memory and publish summaries
@@ -35,13 +35,13 @@ class MemoryStorage(StorageInterface):
     # publish a summary of all cancer messages grouped by minute and channel
     self.zmq_context = zmq.Context()
     self.pubsub_socket = self.zmq_context.socket(zmq.PUB)
-    self.pubsub_socket.bind(Storage.SUMMARY_SOCKET_URI)
-    logger.info("bound publish socket to %s", Storage.SUMMARY_SOCKET_URI)
+    self.pubsub_socket.bind(Config.get('monitor.socket.cancer_summary'))
+    logger.info("bound publish socket to %s", Config.get('monitor.socket.cancer_summary'))
 
     # respond to live cancer requests
     self.cancer_socket = self.zmq_context.socket(zmq.REP)
-    self.cancer_socket.bind(Storage.CANCER_SOCKET_URI)
-    logger.info("bound cancer socket to %s", Storage.CANCER_SOCKET_URI)
+    self.cancer_socket.bind(Config.get('monitor.socket.cancer_request'))
+    logger.info("bound cancer socket to %s", Config.get('monitor.socket.cancer_request'))
 
     # TODO: use asyncio
     t = threading.Thread(target=self._handle_cancer_request)

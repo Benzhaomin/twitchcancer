@@ -1,4 +1,4 @@
-*config.py
+*config.yml
 __pycache__/
 *.py[cod]
 build/

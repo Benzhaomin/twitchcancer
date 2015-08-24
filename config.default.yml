@@ -1,0 +1,27 @@
+# web socket API
+expose:
+    host: localhost
+    port: 8080
+
+# leaderboard persistence
+record:
+    mongodb:
+        host: localhost
+        port: 27017
+        database: twitchcancer
+
+# live chat monitoring
+monitor:
+
+    # inter-module communication
+    socket:
+        # live cancer request/response socket
+        cancer_request: ipc:///tmp/twitchcancer-read-cancer.sock
+
+        # live cancer summary publication socket
+        cancer_summary: ipc:///tmp/twitchcancer-pubsub-summary.sock
+
+    # twitch chat credentials
+    chat:
+        username: username      # your twitch username
+        password: "oauth:key"     # http://twitchapps.com/tmi/

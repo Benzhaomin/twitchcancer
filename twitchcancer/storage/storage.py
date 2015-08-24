@@ -5,7 +5,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 from twitchcancer.storage.storageinterface import StorageInterface
-from twitchcancer.storage.config import config as CONFIG
 
 '''
   Encapsulates three use-cases:
@@ -36,9 +35,6 @@ from twitchcancer.storage.config import config as CONFIG
   Which concrete storage is needed is decided at runtime when any method is called
 '''
 class Storage(StorageInterface):
-
-  CANCER_SOCKET_URI = CONFIG['cancer-socket']
-  SUMMARY_SOCKET_URI = CONFIG['summary-socket']
 
   def __init__(self):
     super().__init__()

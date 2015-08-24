@@ -8,9 +8,9 @@ logger = logging.getLogger(__name__)
 # ZeroMQ
 import zmq
 
+from twitchcancer.config import Config
 from twitchcancer.storage.persistentstore import PersistentStore
 from twitchcancer.storage.storageinterface import StorageInterface
-from twitchcancer.storage.storage import Storage
 
 #
 # keep leaderboards up-to-date with new data from the monitoring process
@@ -28,8 +28,8 @@ class WriteOnlyStorage(StorageInterface):
     self.context = zmq.Context()
     self.socket = self.context.socket(zmq.SUB)
     self.socket.setsockopt(zmq.SUBSCRIBE, b'summary')
-    self.socket.connect(Storage.SUMMARY_SOCKET_URI)
-    logger.info("connected summary socket to %s", Storage.SUMMARY_SOCKET_URI)
+    self.socket.connect(Config.get('monitor.socket.cancer_summary'))
+    logger.info("connected summary socket to %s", Config.get('monitor.socket.cancer_summary'))
 
   # start listening for summaries to persist
   # @socket.recv()

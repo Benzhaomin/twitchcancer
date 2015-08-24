@@ -7,9 +7,9 @@ logger = logging.getLogger(__name__)
 # ZeroMQ
 import zmq
 
+from twitchcancer.config import Config
 from twitchcancer.storage.persistentstore import PersistentStore
 from twitchcancer.storage.storageinterface import StorageInterface
-from twitchcancer.storage.storage import Storage
 
 #
 # expose the entire model: read data, from the persistent and in-memory stores
@@ -57,10 +57,10 @@ class ReadOnlyStorage(StorageInterface):
   # @socket.connect()
   def _connect(self):
     self.socket = self.context.socket(zmq.REQ)
-    self.socket.connect(Storage.CANCER_SOCKET_URI)
+    self.socket.connect(Config.get('monitor.socket.cancer_request'))
     self.poller.register(self.socket, zmq.POLLIN)
 
-    logger.debug("connected cancer socket to %s", Storage.CANCER_SOCKET_URI)
+    logger.debug("connected cancer socket to %s", Config.get('monitor.socket.cancer_request'))
 
   # disconnect from the cancer server
   # @socket.close()
