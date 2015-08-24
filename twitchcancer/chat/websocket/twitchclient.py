@@ -62,26 +62,10 @@ class TwitchClient(WebSocketClientProtocol):
     self.channels.remove(channel)
     self.sendMessage('PART {0}'.format(channel).encode());
 
-  @classmethod
-  def parse_message(cls, line):
-    if "PRIVMSG" in line:
-      # extract the stuff after PRIVMSG and split it on colons
-      colons = line.split("PRIVMSG ")[1].split(" :")
-
-      # merge the message back if it had colons
-      message = ' :'.join(colons[1:]).rstrip()
-
-      return {
-        'channel': colons[0],
-        'message': message.replace('\x01ACTION ', '').replace('\x01', '')
-      }
-
-    return None
-
   channel_message_re = re.compile(".*? PRIVMSG (#[a-zA-z0-9_]*?) :(.*)")
 
   @classmethod
-  def RE_parse_message(cls, line):
+  def parse_message(cls, line):
     match = cls.channel_message_re.match(line)
 
     if match:
