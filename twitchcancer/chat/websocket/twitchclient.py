@@ -27,7 +27,6 @@ def record(parsed):
   #print(parsed['channel'], points)
 
 def channel_message(line):
-  print(line)
   cut = line.split("PRIVMSG")
 
   if len(cut) > 1:
@@ -61,11 +60,18 @@ class TwitchClient(WebSocketClientProtocol):
 
   def onMessage(self, payload, isBinary):
     if isBinary:
-       print("Binary message received: {0} bytes".format(len(payload)))
+      logger.debug("Binary message received: {0} bytes".format(len(payload)))
     else:
-      #print("Text message received: {0}".format(payload.decode('utf8')))
-      parse = channel_message(payload.decode('utf8'))
-      yield from record(parse)
+      message = payload.decode('utf8')
+
+      # respond to PING
+      if message[0:4] == "PING":
+        self.sendMessage('PONG :tmi.twitch.tv'.encode());
+        logger.debug("PONG-ed")
+      # try to parse and record messages
+      else:
+        parse = channel_message(message)
+        yield from record(parse)
 
   @asyncio.coroutine
   def join(self, channel):
