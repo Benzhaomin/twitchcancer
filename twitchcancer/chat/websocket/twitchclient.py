@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
 import asyncio
 import logging
 logger = logging.getLogger(__name__)
@@ -16,39 +17,12 @@ storage = Storage()
 
 @asyncio.coroutine
 def record(parsed):
-  if not parsed:
-    return
-
   # compute points for the message
   points = diagnosis.points(parsed['message'])
 
   # store cancer records for later
   storage.store(parsed['channel'], points)
   #print(parsed['channel'], points)
-
-def channel_message(line):
-  cut = line.split("PRIVMSG")
-
-  if len(cut) > 1:
-    msg = cut[1].split(" :")
-
-    if len(msg) > 1:
-      channel = msg[0].strip()
-      message = ' :'.join(msg[1:]).rstrip()
-
-      if len(message) > 0:
-
-        # strip /me from messages
-        message = message.replace('\x01ACTION', '').replace('\x01', '')
-
-        #print(message[0:20], channel)
-
-        return {
-          'channel': channel,
-          'message': message
-        }
-
-  return None
 
 class TwitchClient(WebSocketClientProtocol):
 
@@ -73,8 +47,9 @@ class TwitchClient(WebSocketClientProtocol):
         logger.debug("PONG-ed")
       # try to parse and record messages
       else:
-        parse = channel_message(message)
-        yield from record(parse)
+        parsed = TwitchClient.parse_message(message)
+        if parsed:
+          yield from record(parsed)
 
   @asyncio.coroutine
   def join(self, channel):
@@ -87,16 +62,47 @@ class TwitchClient(WebSocketClientProtocol):
     self.channels.remove(channel)
     self.sendMessage('PART {0}'.format(channel).encode());
 
-if __name__ == "__main__":
-  # profiling: import yappi
+  @classmethod
+  def parse_message(cls, line):
+    if "PRIVMSG" in line:
+      # extract the stuff after PRIVMSG and split it on colons
+      colons = line.split("PRIVMSG ")[1].split(" :")
 
-  # profiling: yappi.start()
+      # merge the message back if it had colons
+      message = ' :'.join(colons[1:]).rstrip()
+
+      return {
+        'channel': colons[0],
+        'message': message.replace('\x01ACTION ', '').replace('\x01', '')
+      }
+
+    return None
+
+  channel_message_re = re.compile(".*? PRIVMSG (#[a-zA-z0-9_]*?) :(.*)")
+
+  @classmethod
+  def RE_parse_message(cls, line):
+    match = cls.channel_message_re.match(line)
+
+    if match:
+      return {
+        'channel': match.group(1),
+        'message': match.group(2).replace('\x01ACTION ', '').replace('\x01', '')
+      }
+
+    return None
+
+'''
+if __name__ == "__main__":
+  import yappi
+
+  yappi.start()
 
   with open("../websocket.log") as f:
     for l in f:
-      m = channel_message(l)
-      if m:
-        print(m)
+      assert TwitchClient.parse_message(l) TwitchClient.RE_parse_message(l)
 
-  # profiling: yappi.get_func_stats().print_all()
-  # profiling: yappi.get_thread_stats().print_all()
+
+  yappi.get_func_stats().print_all()
+  yappi.get_thread_stats().print_all()
+'''
