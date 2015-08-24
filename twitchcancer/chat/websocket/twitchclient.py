@@ -38,6 +38,9 @@ def channel_message(line):
 
       if len(message) > 0:
 
+        # strip /me from messages
+        message = message.replace('\x01ACTION', '').replace('\x01', '')
+
         #print(message[0:20], channel)
 
         return {
@@ -83,3 +86,17 @@ class TwitchClient(WebSocketClientProtocol):
   def leave(self, channel):
     self.channels.remove(channel)
     self.sendMessage('PART {0}'.format(channel).encode());
+
+if __name__ == "__main__":
+  # profiling: import yappi
+
+  # profiling: yappi.start()
+
+  with open("../websocket.log") as f:
+    for l in f:
+      m = channel_message(l)
+      if m:
+        print(m)
+
+  # profiling: yappi.get_func_stats().print_all()
+  # profiling: yappi.get_thread_stats().print_all()
