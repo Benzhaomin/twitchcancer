@@ -19,8 +19,6 @@ if __name__ == "__main__":
 
   parser.add_argument("--protocol", dest="protocol", default="websocket",
     help="protocol to use to monitor chat channels, websocket or irc (default: websocket)")
-  #parser.add_argument("--pub-socket", dest="pub-socket", default="ipc:///tmp/twitchcancer-pubsub-summary.sock", help="URI of the pub/sub socket (default: ipc:///tmp/twitchcancer-pubsub-summary.sock)")
-  #parser.add_argument("--req-socket", dest="req-socket", default=ipc:///tmp/twitchcancer-read-cancer.sock, help="URI of the req/rep socket (default: ipc:///tmp/twitchcancer-read-cancer.sock)")
 
   args = parser.parse_args()
 

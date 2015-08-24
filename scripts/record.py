@@ -18,9 +18,6 @@ if __name__ == "__main__":
   parser.add_argument('--log', dest='loglevel', default='WARNING',
     help="set the level of messages to display")
 
-  #parser.add_argument("--db-host", dest="host", default="localhost", help="hostname or ip address (default: localhost)")
-  #parser.add_argument("--db-port", dest="port", default=8080, help="port number (default: 8080)")
-
   args = parser.parse_args()
 
   # set logger level
