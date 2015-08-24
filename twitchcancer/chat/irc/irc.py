@@ -59,7 +59,14 @@ class IRC:
     return config
 
   def join(self, channel):
-    self.client.join('#'+channel)
+    self.client.join(channel)
+
+  def leave(self, channel):
+    self.client.leave(channel)
+
+  def __getattr__(self, attr):
+    if attr == "channels":
+      return self.client.channels
 
   # background thread to handle all IRC communication
   def _client_thread(self, client):

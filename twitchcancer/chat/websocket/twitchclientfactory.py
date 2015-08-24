@@ -29,6 +29,14 @@ class TwitchClientFactory(WebSocketClientFactory):
     logger.debug('created a client for server %s', self.server)
     return proto
 
+  @asyncio.coroutine
+  def join(self, channel):
+    yield from self.client.join(channel)
+
+  @asyncio.coroutine
+  def leave(self, channel):
+    yield from self.client.leave(channel)
+
   def __getattr__(self, attr):
     if attr == "channels":
       return self.client.channels

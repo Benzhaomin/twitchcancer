@@ -55,6 +55,7 @@ class IRCClient(irc.client.SimpleIRCClient):
     # make sure the channel exists
     if not irc.client.is_channel(channel):
       logger.debug('channel %s not found on ', channel, self)
+      return
 
     # don't join the same channel twice
     if channel in self.channels:
@@ -65,6 +66,23 @@ class IRCClient(irc.client.SimpleIRCClient):
 
     # save the new channel
     self.channels.add(channel)
+
+  def leave(self, channel):
+    # just don't do anything if we're not connected
+    if not self.connection.is_connected():
+      logger.debug('%s not connected yet, no need to leave %s', self, channel)
+      return
+
+    # make sure the channel exists
+    if not irc.client.is_channel(channel):
+      logger.debug('channel %s not found on ', channel, self)
+      return
+
+    # send an IRC PART command
+    self.connection.part(channel)
+
+    # save the new channel
+    self.channels.remove(channel)
 
   def on_welcome(self, connection, event):
     logger.debug('welcome, joining %s', self.autojoin)

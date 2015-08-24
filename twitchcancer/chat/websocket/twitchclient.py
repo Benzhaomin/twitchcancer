@@ -27,6 +27,7 @@ def record(parsed):
   #print(parsed['channel'], points)
 
 def channel_message(line):
+  print(line)
   cut = line.split("PRIVMSG")
 
   if len(cut) > 1:
@@ -55,8 +56,8 @@ class TwitchClient(WebSocketClientProtocol):
     self.sendMessage('NICK {0}'.format(CONFIG['username'].lower()).encode());
 
     for channel in self.channels:
-      self.sendMessage('JOIN #{0}'.format(channel).encode());
-      logger.info("client joining #%s", channel)
+      self.sendMessage('JOIN {0}'.format(channel).encode());
+      logger.info("client auto-joining %s", channel)
 
   def onMessage(self, payload, isBinary):
     if isBinary:
@@ -69,10 +70,10 @@ class TwitchClient(WebSocketClientProtocol):
   @asyncio.coroutine
   def join(self, channel):
     self.channels.add(channel)
-    self.sendMessage('JOIN #{0}'.format(channel).encode());
+    self.sendMessage('JOIN {0}'.format(channel).encode());
+    logger.info("client joining %s", channel)
 
-  # untested
   @asyncio.coroutine
-  def part(self, channel):
+  def leave(self, channel):
     self.channels.remove(channel)
-    self.sendMessage('PART #{0}'.format(channel).encode());
+    self.sendMessage('PART {0}'.format(channel).encode());

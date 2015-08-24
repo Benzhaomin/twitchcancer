@@ -17,7 +17,12 @@ class AsyncWebSocketMonitor(Monitor):
     super().__init__(viewers)
 
     self.loop = asyncio.get_event_loop()
-    self.servers = {}
+    self.clients = {}
+
+  # fake a channels property, extracted from clients
+  def __getattr__(self, attr):
+    if attr == "channels":
+      return [channel for client in self.clients.values() for channel in client.channels]
 
   # join and leave channels, forever
   def run(self):
@@ -27,20 +32,17 @@ class AsyncWebSocketMonitor(Monitor):
   def mainloop(self):
     # every 60 seconds
     while True:
-      # list new channel
-      # join new big ones
-      # leave dead ones
       yield from self.autojoin()
 
-      logger.info("cycle ran with %s servers and %s channels over %s viewers up", len(self.servers), len(self.channels()), self.viewers)
+      logger.info("cycle ran with %s clients and %s channels over %s viewers up", len(self.clients), len(self.channels), self.viewers)
 
       yield from asyncio.sleep(60)
 
-  # connect to a server
+  # connect to a client
   @asyncio.coroutine
   def connect(self, server):
     # don't connect twice to the same server
-    if server in self.servers:
+    if server in self.clients:
       return
 
     logger.debug("connecting to %s", server)
@@ -50,7 +52,7 @@ class AsyncWebSocketMonitor(Monitor):
     factory.loop = self.loop
     factory.server = server
 
-    self.servers[server] = factory
+    self.clients[server] = factory
 
     coro = self.loop.create_connection(factory, ip, port)
     yield from coro
@@ -59,31 +61,40 @@ class AsyncWebSocketMonitor(Monitor):
   @asyncio.coroutine
   def join(self, channel):
     # don't join the same channel twice
-    if channel in self.channels():
+    if channel in self.channels:
       #logger.debug("not re-joining %s", channel)
       return
 
-    # get a random server hosting this channel
+    # get a random client hosting this channel
     server = self.find_server(channel)
 
-    # connect to new servers
+    # connect to new clients
     yield from self.connect(server)
 
     # join the channel
     logger.debug("will join %s on %s", channel, server)
-    yield from self.servers[server].client.join(channel)
+    yield from self.clients[server].join(channel)
 
   # leave a channel
+  @asyncio.coroutine
   def leave(self, channel):
-    pass
+    # don't leave a channel we didn't join
+    if channel not in self.channels:
+      #logger.debug("not leaving un-joined channel %s", channel)
+      return
+
+    # tell the client to leave the channel
+    logger.debug("will leave channel %s", channel)
+    client = self.get_client(channel)
+    yield from client.leave(channel)
 
   # find a server hosting a channel
   def find_server(self, channel):
-    with urllib.request.urlopen('http://api.twitch.tv/api/channels/{0}/chat_properties'.format(channel)) as response:
+    with urllib.request.urlopen('http://api.twitch.tv/api/channels/{0}/chat_properties'.format(channel.replace("#", ""))) as response:
       j = json.loads(response.read().decode())
       return random.choice(j['web_socket_servers'])
 
-  # join big channels
+  # join big channels, leave offline ones
   @asyncio.coroutine
   def autojoin(self):
     # get a list of channels from https://api.twitch.tv/kraken/streams/?limit=100
@@ -94,16 +105,29 @@ class AsyncWebSocketMonitor(Monitor):
       with urllib.request.urlopen('https://api.twitch.tv/kraken/streams/?limit=100') as response:
         data = json.loads(response.read().decode())
 
-        # TODO: stop monitoring dead streams
+        # leave any channel out of the top 100 (offline or just further down the list)
+        online_channels = ['#'+stream['channel']['name'] for stream in data['streams']]
+
+        for channel in self.channels:
+          if channel not in online_channels:
+            yield from self.leave(channel)
+
+        # join channels over n viewers, leave channels under n viewers
         for stream in data['streams']:
           if stream['viewers'] > self.viewers:
-            yield from self.join(stream['channel']['name'])
+            yield from self.join('#'+stream['channel']['name'])
+          else:
+            yield from self.leave('#'+stream['channel']['name'])
     except urllib.error.URLError:
       # ignore the error, we'll try again next cycle
       pass
 
-  def channels(self):
-    return [channel for server in self.servers.values() for channel in server.channels]
+  # returns the client connected to the server where a channel was joined
+  def get_client(self, channel):
+    for client in self.clients.values():
+      if channel in client.channels:
+        return client
+    return None
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')

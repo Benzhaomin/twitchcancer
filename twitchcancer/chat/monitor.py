@@ -32,7 +32,7 @@ class Monitor():
   def find_server(self, channel):
     return None
 
-  # join big channels
+  # join big channels, leave offline ones
   def autojoin(self):
     # get a list of channels from https://api.twitch.tv/kraken/streams/?limit=100
     # join any channel over n viewers
