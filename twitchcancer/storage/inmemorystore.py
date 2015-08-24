@@ -27,7 +27,7 @@ class InMemoryStore:
     self.messages = collections.deque()
     self.messages_lock = threading.Lock()
 
-    logger.debug('created an InMemorytStore object')
+    logger.info('created an InMemorytStore object')
 
   # returns a summary of cancer and message by channel grouped by minute, processed messages are deleted forever
   # @memory.read()
@@ -80,7 +80,7 @@ class InMemoryStore:
 
     # debugging
     now_end = datetime.datetime.now(datetime.timezone.utc)
-    logger.debug('archived %s messages in %s ms, %s messages left', message_delta, (now_end - now_start).total_seconds() * 1000, len(self.messages))
+    logger.info('archived %s messages in %s ms, %s messages left', message_delta, (now_end - now_start).total_seconds() * 1000, len(self.messages))
 
     return history
 

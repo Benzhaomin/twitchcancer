@@ -36,12 +36,12 @@ class MemoryStorage(StorageInterface):
     self.zmq_context = zmq.Context()
     self.pubsub_socket = self.zmq_context.socket(zmq.PUB)
     self.pubsub_socket.bind(Storage.SUMMARY_SOCKET_URI)
-    logger.debug("bound publish socket to %s", Storage.SUMMARY_SOCKET_URI)
+    logger.info("bound publish socket to %s", Storage.SUMMARY_SOCKET_URI)
 
     # respond to live cancer requests
     self.cancer_socket = self.zmq_context.socket(zmq.REP)
     self.cancer_socket.bind(Storage.CANCER_SOCKET_URI)
-    logger.debug("bound cancer socket to %s", Storage.CANCER_SOCKET_URI)
+    logger.info("bound cancer socket to %s", Storage.CANCER_SOCKET_URI)
 
     # TODO: use asyncio
     t = threading.Thread(target=self._handle_cancer_request)

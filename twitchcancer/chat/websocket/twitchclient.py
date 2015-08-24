@@ -33,7 +33,7 @@ class TwitchClient(WebSocketClientProtocol):
 
     for channel in self.channels:
       self.sendMessage('JOIN {0}'.format(channel).encode());
-      logger.info("client auto-joining %s", channel)
+      logger.info("auto-joining %s", channel)
 
   def onMessage(self, payload, isBinary):
     if isBinary:
@@ -55,12 +55,13 @@ class TwitchClient(WebSocketClientProtocol):
   def join(self, channel):
     self.channels.add(channel)
     self.sendMessage('JOIN {0}'.format(channel).encode());
-    logger.info("client joining %s", channel)
+    logger.info("joining %s", channel)
 
   @asyncio.coroutine
   def leave(self, channel):
     self.channels.remove(channel)
     self.sendMessage('PART {0}'.format(channel).encode());
+    logger.info("leaving %s", channel)
 
   channel_message_re = re.compile(".*? PRIVMSG (#[a-zA-z0-9_]*?) :(.*)")
 

@@ -49,7 +49,7 @@ class ThreadedIRCMonitor(Monitor):
     if server in self.clients:
       return
 
-    logger.debug("connecting to %s", server)
+    logger.info("connecting to %s", server)
 
     (ip, port) = server.split(":")
     client = IRC(ip, port)
@@ -59,7 +59,7 @@ class ThreadedIRCMonitor(Monitor):
     t = Thread(name="Thread-"+server, target=_monitor_one, kwargs={'source':client, 'diagnosis': self.diagnosis, 'storage':self.storage})
     t.daemon = True
     t.start()
-    logger.info("started monitoring %s in thread %s", server, t.name)
+    logger.debug("started monitoring %s in thread %s", server, t.name)
 
   # join a channel
   def join(self, channel):

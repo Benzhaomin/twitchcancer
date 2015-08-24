@@ -45,7 +45,7 @@ class AsyncWebSocketMonitor(Monitor):
     if server in self.clients:
       return
 
-    logger.debug("connecting to %s", server)
+    logger.info("connecting to %s", server)
 
     (ip, port) = server.split(":")
     factory = TwitchClientFactory(loop=self.loop)
