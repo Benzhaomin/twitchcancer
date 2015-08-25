@@ -46,3 +46,14 @@ class TestConfigUpdate(unittest.TestCase):
     Config.update({"level1": {"level2": {"unknown": "merged"}}})
     self.assertEqual('unknown' not in Config.config['level1']['level2'], True)
 
+# twitchcancer.config.Config.defaults()
+class TestConfigDefaults(unittest.TestCase):
+
+  # check that new values are merged in
+  def test_defaults_defaults(self):
+    Config.defaults()
+    self.assertEqual('expose' in Config.config, True)
+    self.assertEqual('record' in Config.config, True)
+    self.assertEqual('monitor' in Config.config, True)
+    self.assertEqual('chat' in Config.config['monitor'], True)
+    self.assertEqual('unknown' not in Config.config, True)

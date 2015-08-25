@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+import os
 import logging
 logger = logging.getLogger('twitchcancer')
 
@@ -45,7 +47,7 @@ class Config:
 
   # load defaults
   @classmethod
-  def defaults(cls, path="config.default.yml"):
+  def defaults(cls, path=os.path.join(os.path.dirname(__file__), "config.default.yml")):
     with open(path, 'r') as yaml_file:
       cls.config = yaml.load(yaml_file)
 

@@ -7,7 +7,7 @@ scripts = []
 requires = ['pyzmq >=14.7.0', 'PyYAML >= 3.11']
 extras_requires = []
 excludes = []
-package_data = {}
+package_data = {'twitchcancer': ['config.default.yml']}
 
 libs = {
   'pymongo': 'pymongo >= 3.0.3',
