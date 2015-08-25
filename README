@@ -4,6 +4,28 @@ Suite of tool targeted at diagnosing, monitoring and recording data about chat c
 
 These 4 components run independently from each other and communicate through ZeroMQ sockets and WebSockets. Any single one can be restarted or down, the others will reconnect when possible.
 
+## Install
+
+- python setup.py install
+- edit your local config file (see Configuration)
+
+### Configuration
+
+You can use the `-f` or `--config` switch to pass the path of a configuration file overriding any of the [default settings](twitchcancer/config.default.yml).
+
+The monitor module requires a valid Twitch username and an active oauth key, example:
+
+```yaml
+monitor:
+    chat:
+        username: username      # your twitch username
+        password: oauth:key     # http://twitchapps.com/tmi/
+```
+
+You would then run the monitor module with:
+
+`twitchcancer-monitor -f myconfig.yml`
+
 ## Monitor
 
 ### Goal
@@ -16,14 +38,14 @@ These 4 components run independently from each other and communicate through Zer
 
 - IRC: https://pypi.python.org/pypi/irc
 or
-- Asyncio (Python 3.4+)
+- Python >= 3.4 (asyncio)
 - AutoBahn: http://autobahn.ws/python
 
 - PyZMQ: https://github.com/zeromq/pyzmq
 
 ### Usage
 
-See `python scripts/monitor.py -h`
+See `twitchcancer-monitor -h`
 
 ## Record
 
@@ -39,7 +61,7 @@ See `python scripts/monitor.py -h`
 
 ### Usage
 
-See `python scripts/record.py -h`
+See `twitchcancer-record -h`
 
 ## Expose
 
@@ -49,7 +71,7 @@ See `python scripts/record.py -h`
 
 ### Usage
 
-See `python scripts/api.py -h`
+See `twitchcancer-expose -h`
 
 - connect to: 'ws://localhost:8080'
 - subscribe: `{'subscribe': 'topic'}'
