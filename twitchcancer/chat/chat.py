@@ -4,17 +4,16 @@
 import logging
 logger = logging.getLogger(__name__)
 
-from twitchcancer.chat.irc.threaded import ThreadedIRCMonitor
-from twitchcancer.chat.websocket.async import AsyncWebSocketMonitor
-
 # profiling: import yappi
 
 def run(args):
   # profiling: yappi.start()
 
   if args.protocol == 'irc':
+    from twitchcancer.chat.irc.threaded import ThreadedIRCMonitor
     monitor = ThreadedIRCMonitor(viewers=args.viewers)
   else:
+    from twitchcancer.chat.websocket.async import AsyncWebSocketMonitor
     monitor = AsyncWebSocketMonitor(viewers=args.viewers)
 
   monitor.run()
