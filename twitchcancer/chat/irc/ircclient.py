@@ -30,14 +30,16 @@ class IRCClient(irc.client.SimpleIRCClient):
   def __init__(self, config):
     irc.client.SimpleIRCClient.__init__(self)
 
+    self.connecting = False
     self.config = config
     self.autojoin = set()
     self.channels = set()
 
   def _connect(self):
-    if not self.connection.is_connected():
+    if not self.connection.is_connected() and not self.connecting:
       try:
         self.connect(self.config['server'], self.config['port'], self.config['username'], self.config['password'])
+        self.connecting = True
       except irc.client.ServerConnectionError as x:
           print(x)
           sys.exit(1)
@@ -48,8 +50,9 @@ class IRCClient(irc.client.SimpleIRCClient):
   def join(self, channel):
     # connect if necessary (and auto-join on welcome)
     if not self.connection.is_connected():
-      logger.debug('%s not connected yet, will join %s later', self, channel)
+      logger.debug('%s not connected, will join %s later', self, channel)
       self.autojoin.add(channel)
+      self._connect()
       return
 
     # make sure the channel exists
@@ -71,12 +74,14 @@ class IRCClient(irc.client.SimpleIRCClient):
   def leave(self, channel):
     # just don't do anything if we're not connected
     if not self.connection.is_connected():
-      logger.debug('%s not connected yet, no need to leave %s', self, channel)
+      logger.debug('%s not connected, reconnect before leaving %s', self, channel)
+      self._connect()
       return
 
     # make sure the channel exists
     if not irc.client.is_channel(channel):
       logger.warn('channel %s not found on ', channel, self)
+      self.channels.remove(channel)
       return
 
     # send an IRC PART command
@@ -88,6 +93,8 @@ class IRCClient(irc.client.SimpleIRCClient):
 
   def on_welcome(self, connection, event):
     logger.debug('welcome, joining %s', self.autojoin)
+
+    self.connecting = False
 
     for channel in set(self.autojoin):
       self.autojoin.remove(channel)
@@ -106,7 +113,8 @@ class IRCClient(irc.client.SimpleIRCClient):
     method(event.target, event.arguments[0])
 
   def on_disconnect(self, connection, event):
-    sys.exit(0)
+    self.autojoin = self.channels
+    self._connect()
 
 def debug_on_msg(msg):
   print(msg)
