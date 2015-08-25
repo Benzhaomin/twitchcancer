@@ -1,6 +1,8 @@
-*config.yml
 __pycache__/
 *.py[cod]
+*.log
+*config.yml
+*.egg-info/
+.tox/
 build/
 dist/
-*~
