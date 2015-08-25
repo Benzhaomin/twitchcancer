@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 from autobahn.asyncio.websocket import WebSocketServerFactory
 
+from twitchcancer.config import Config
 from twitchcancer.api.pubsubprotocol import PubSubProtocol
 from twitchcancer.api.pubsubtopic import PubSubTopic
 from twitchcancer.api.pubsubmanager import PubSubManager
@@ -44,7 +45,7 @@ def run(args):
 
   # setup the main event loop for network i/o
   loop = asyncio.get_event_loop()
-  coro = loop.create_server(factory, args.host, args.port)
+  coro = loop.create_server(factory, Config.get('expose.websocket.host'), Config.get('expose.websocket.port'))
   server = loop.run_until_complete(coro)
 
   # setup publishers coroutines
