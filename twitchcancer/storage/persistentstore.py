@@ -5,9 +5,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 # mongodb
+import pymongo
 from bson.code import Code
 from bson.objectid import ObjectId
-import pymongo
 
 from twitchcancer.config import Config
 
