@@ -27,7 +27,7 @@ if "--no-monitor" not in sys.argv:
   extras_requires.append(libs['irc'])
 
   # diagnosis needs a list of emotes
-  package_data['twitchcancer.symptom'] = ['emotes.txt']
+  package_data['twitchcancer.symptom'] = ['emotes.txt', 'banned.txt']
 else:
   excludes.append("twitchcancer.chat")
   excludes.append("twitchcancer.chat.*")
