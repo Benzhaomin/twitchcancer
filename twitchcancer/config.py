@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import argparse
 import logging
 logger = logging.getLogger('twitchcancer')
 
@@ -10,6 +9,27 @@ import yaml
 class Config:
 
   config = {}
+
+  # update the current config only overwriting new values
+  @classmethod
+  def update(cls, config_dict):
+    cls.config = cls.deep_merge(cls.config, config_dict)
+
+  @classmethod
+  def deep_merge(cls, old, new):
+    if not isinstance(old, dict):
+      if not isinstance(new, dict):
+        return new
+      else:
+        return old
+    else:
+      if isinstance(new, dict):
+        for key in old:
+          if key in new:
+            old[key] = cls.deep_merge(old[key], new[key])
+        return old
+      else:
+        return old
 
   # load config from a yaml file
   @classmethod
@@ -21,7 +41,13 @@ class Config:
       yaml_config = yaml.load(yaml_file)
 
     # merge this config with the default one
-    cls.config.update(yaml_config)
+    cls.update(yaml_config)
+
+  # load defaults
+  @classmethod
+  def defaults(cls, path="config.default.yml"):
+    with open(path, 'r') as yaml_file:
+      cls.config = yaml.load(yaml_file)
 
   # returns a single value of the configuration
   @classmethod
@@ -31,4 +57,5 @@ class Config:
         config = config.get(level, {})
     return config
 
-Config.load("config.default.yml")
+
+Config.defaults()
