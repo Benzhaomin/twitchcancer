@@ -24,4 +24,4 @@ monitor:
     # twitch chat credentials
     chat:
         username: username      # your twitch username
-        password: "oauth:key"     # http://twitchapps.com/tmi/
+        password: oauth:key     # http://twitchapps.com/tmi/
