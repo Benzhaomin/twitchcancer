@@ -118,9 +118,9 @@ class AsyncWebSocketMonitor(Monitor):
             yield from self.join('#'+stream['channel']['name'])
           else:
             yield from self.leave('#'+stream['channel']['name'])
-    except urllib.error.URLError:
+    except urllib.error.URLError as e:
       # ignore the error, we'll try again next cycle
-      pass
+      logger.warn("stream list request failed", e)
 
   # returns the client connected to the server where a channel was joined
   def get_client(self, channel):
