@@ -16,7 +16,7 @@ libs = {
 }
 
 # with or without chat monitoring
-if "--no-monitor" not in sys.argv:
+if True or "--no-monitor" not in sys.argv:
   # main script
   scripts.append('scripts/twitchcancer-monitor')
 
@@ -37,7 +37,7 @@ else:
   sys.argv.remove("--no-monitor")
 
 # with or without API
-if "--no-expose" not in sys.argv:
+if True or "--no-expose" not in sys.argv:
   # main script
   scripts.append('scripts/twitchcancer-expose')
 
@@ -57,7 +57,7 @@ else:
   sys.argv.remove("--no-expose")
 
 # with or without cancer levels recording
-if "--no-record" not in sys.argv:
+if True or "--no-record" not in sys.argv:
   # main script
   scripts.append('scripts/twitchcancer-record')
 
@@ -75,7 +75,7 @@ print("extras_requires", extras_requires)
 # setup
 setup(
   name = 'twitchcancer',
-  version = '0.0.1',
+  version = '0.1.0',
   packages = find_packages(exclude=excludes),
   scripts = scripts,
   install_requires = requires,
