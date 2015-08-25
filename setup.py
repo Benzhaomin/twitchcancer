@@ -1,12 +1,11 @@
 
-import sys
 from setuptools import setup, find_packages
 
 # modular dependencies
-scripts = []
-requires = ['pyzmq >=14.7.0', 'PyYAML >= 3.11']
-extras_requires = []
-excludes = []
+scripts = set()
+requires = set(['pyzmq >=14.7.0', 'PyYAML >= 3.11'])
+extras_requires = set()
+excludes = set()
 package_data = {'twitchcancer': ['config.default.yml']}
 
 libs = {
@@ -15,57 +14,44 @@ libs = {
   'irc': 'irc >= 11.0.1',
 }
 
-# with or without chat monitoring
-if True or "--no-monitor" not in sys.argv:
-  # main script
-  scripts.append('scripts/twitchcancer-monitor')
+## chat monitoring
+# main script
+scripts.add('scripts/twitchcancer-monitor')
 
-  # web-sockets need autobahn
-  extras_requires.append(libs['autobahn'])
+# packages
+# ("twitchcancer.chat")
+# ("twitchcancer.chat.*")
+# ("twitchcancer.monitor")
+# ("twitchcancer.symptom")
 
-  # irc needs irc
-  extras_requires.append(libs['irc'])
+# web-sockets need autobahn
+extras_requires.add(libs['autobahn'])
 
-  # diagnosis needs a list of emotes
-  package_data['twitchcancer.symptom'] = ['emotes.txt', 'banned.txt']
-else:
-  excludes.append("twitchcancer.chat")
-  excludes.append("twitchcancer.chat.*")
-  excludes.append("twitchcancer.monitor")
-  excludes.append("twitchcancer.symptom")
+# irc needs irc
+extras_requires.add(libs['irc'])
 
-  sys.argv.remove("--no-monitor")
+# diagnosis needs a list of emotes
+package_data['twitchcancer.symptom'] = ['emotes.txt', 'banned.txt']
 
-# with or without API
-if True or "--no-expose" not in sys.argv:
-  # main script
-  scripts.append('scripts/twitchcancer-expose')
+## API
+# main script
+scripts.add('scripts/twitchcancer-expose')
 
-  # persistent storing needs mongodb
-  if libs['pymongo'] not in requires:
-    requires.append(libs['pymongo'])
+# packages
+# ("twitchcancer.api")
 
-  # web-sockets need autobahn
-  requires.append(libs['autobahn'])
+# persistent storing needs mongodb
+extras_requires.add(libs['pymongo'])
 
-  # autobahn is not just extra anymore
-  if libs['autobahn'] in extras_requires:
-    extras_requires.remove(libs['autobahn'])
-else:
-  excludes.append("twitchcancer.api")
+# web-sockets need autobahn
+extras_requires.add(libs['autobahn'])
 
-  sys.argv.remove("--no-expose")
+## cancer levels recording
+# main script
+scripts.add('scripts/twitchcancer-record')
 
-# with or without cancer levels recording
-if True or "--no-record" not in sys.argv:
-  # main script
-  scripts.append('scripts/twitchcancer-record')
-
-  # persistent storing needs mongodb
-  if libs['pymongo'] not in requires:
-    requires.append(libs['pymongo'])
-else:
-  sys.argv.remove("--no-record")
+# persistent storing needs mongodb
+extras_requires.add(libs['pymongo'])
 
 print("scripts", scripts)
 print("requires", requires)
@@ -75,7 +61,7 @@ print("extras_requires", extras_requires)
 # setup
 setup(
   name = 'twitchcancer',
-  version = '0.1.0',
+  version = '0.1.1',
   packages = find_packages(exclude=excludes),
   scripts = scripts,
   install_requires = requires,
