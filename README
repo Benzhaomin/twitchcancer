@@ -85,18 +85,7 @@ See `twitchcancer-expose -h`
 
 ## Explore
 
-### Goal
-
-- website to display live data (AngularJS)
-- subscribe to the Pub/Sub API to always be up-to-date
-
-### Requirements
-
-- grunt
-
-### Usage
-
-TODO
+Moved to (its own repository)[https://github.com/Benzhaomin/TwitchCancerExplore].
 
 # License
 
