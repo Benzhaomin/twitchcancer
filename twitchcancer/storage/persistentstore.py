@@ -9,6 +9,8 @@ from bson.code import Code
 from bson.objectid import ObjectId
 import pymongo
 
+from twitchcancer.config import Config
+
 '''
   Schema
 
@@ -48,11 +50,14 @@ class PersistentStore:
   def __init__(self):
     super().__init__()
 
-    # TODO: allow for remote DB config
-    client = pymongo.MongoClient()
-    self.db = client.twitchcancer
+    client = pymongo.MongoClient(
+      host=Config.get('record.mongodb.host'),
+      port=int(Config.get('record.mongodb.port'))
+    )
 
-    logger.debug('created a PersistentStore object')
+    self.db = client[Config.get('record.mongodb.database')]
+
+    logger.info('using mongodb://%s:%s/%s', Config.get('record.mongodb.host'), Config.get('record.mongodb.port'), self.db.name)
 
   # update db.leaderboard with this minute+channel record
   # @db.write
