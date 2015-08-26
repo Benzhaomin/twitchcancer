@@ -21,11 +21,20 @@ class PubSubManager:
   def __init__(self):
     self.subscriptions = collections.defaultdict(set)
 
-  # publish an event to every client subscribed to a topic
-  def publish(self, topic, data):
-    logger.debug('publishing data for %s to %s subs', topic, len(self.subscriptions[topic]))
-    for subscriber in self.subscriptions[topic]:
-      subscriber.send(topic, data)
+  # publish new data to every client subscribed to a topic
+  def publish(self, topic):
+
+    # find all the topic by name (pattern matching)
+    for topic_name, clients in self.subscriptions.items():
+
+      if topic.match(topic_name):
+        # get data for this topic, with its full name in case it contains arguments
+        data = topic.payload(name=topic_name)
+        logger.debug('publishing data for %s to %s subs', topic_name, len(clients))
+
+        # push new data to every client
+        for client in clients:
+          client.send(topic_name, data)
 
   # publish data from a topic to a single client, usually right after subscription
   def publish_one(self, client, topic):
@@ -33,7 +42,7 @@ class PubSubManager:
 
     if t:
       logger.debug('publishing data once for %s to %s', topic, client)
-      client.send(topic, t.payload(useCache=True))
+      client.send(topic, t.payload(useCache=True, name=topic))
 
   # let clients subscribe to a single topic
   def subscribe(self, client, topic):
@@ -47,6 +56,11 @@ class PubSubManager:
     try:
       self.subscriptions[topic].remove(client)
       logger.debug('unsubscribed %s from %s', client, topic)
+
+      # remove empty records
+      if len(self.subscriptions[topic]) == 0:
+        logger.debug('%s lost its last subscriber, removing it', topic)
+        del self.subscriptions[topic]
     except KeyError:
       logger.warn('unsubscribed %s from %s but this topic doesn\'t exist', client, topic)
       pass

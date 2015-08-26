@@ -9,7 +9,7 @@ from autobahn.asyncio.websocket import WebSocketServerFactory
 
 from twitchcancer.config import Config
 from twitchcancer.api.pubsubprotocol import PubSubProtocol
-from twitchcancer.api.pubsubtopic import PubSubTopic
+from twitchcancer.api.pubsubtopic import PubSubTopic, PubSubVariableTopic
 from twitchcancer.api.pubsubmanager import PubSubManager
 from twitchcancer.storage.storage import Storage
 
@@ -17,7 +17,7 @@ from twitchcancer.storage.storage import Storage
 @asyncio.coroutine
 def publish(topic):
   while True:
-    PubSubManager.instance().publish(topic.name, topic.payload())
+    PubSubManager.instance().publish(topic)
     yield from asyncio.sleep(topic.sleep)
 
 # build publishers coroutines
@@ -30,6 +30,7 @@ def create_publishers():
   topics = [
     PubSubTopic('twitchcancer.live', storage.cancer, 1),
     PubSubTopic('twitchcancer.leaderboards', storage.leaderboards, 60),
+    PubSubVariableTopic('twitchcancer.channel.*', storage.channel, 60),
   ]
 
   # add publisher tasks to the loop

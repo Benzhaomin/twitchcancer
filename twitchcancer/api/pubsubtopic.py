@@ -28,14 +28,40 @@ class PubSubTopic:
   # find a topic by name
   def find(name):
     for t in PubSubTopic.instances:
-      if t.name == name:
+      if t.match(name):
         return t
     logger.warn('no result in find(%s)', name)
     return None
 
+  # check whether name is the name of this topic
+  def match(self, name):
+    return self.name == name
+
   # return the topic's current data from cache or freshly computed
-  def payload(self, useCache=False):
-    if not useCache:
+  def payload(self, useCache=False, **kwargs):
+    if not useCache or self.data is None:
       self.data = self.callback()
     return self.data
 
+# represents a topic where the last part of the path is variable
+class PubSubVariableTopic(PubSubTopic):
+
+  def __init__(self, name, callback, sleep):
+    super().__init__(name, callback, sleep)
+
+    if not self.name.endswith(".*"):
+      raise NotImplementedError("regexp topics must end with a variable part")
+
+  # checks whether name is like the name of this topic
+  def match(self, name):
+    return name.startswith(self.name.replace("*", ""))
+
+  # return the variable part of the path
+  def argument(self, name):
+    return name[len(self.name.replace("*", "")):]
+
+  # return the topic's current data from cache or freshly computed
+  def payload(self, useCache=False, **kwargs):
+    if not useCache or self.data is None:
+      self.data = self.callback(self.argument(kwargs["name"]))
+    return self.data
