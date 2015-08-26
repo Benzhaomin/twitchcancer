@@ -243,17 +243,17 @@ class PersistentStore:
     }
 
     result['average']['cancer'] = {
-      'value': result['total']['cancer'],
+      'value': result['average']['cancer'],
       'rank': self._leaderboard_rank('average.cancer', result['average']['cancer'])
     }
 
     result['average']['messages'] = {
-      'value': result['total']['messages'],
+      'value': result['average']['messages'],
       'rank': self._leaderboard_rank('average.messages', result['average']['messages'])
     }
 
     result['average']['cpm'] = {
-      'value': result['total']['cpm'],
+      'value': result['average']['cpm'],
       'rank': self._leaderboard_rank('average.cpm', result['average']['cpm'])
     }
 
