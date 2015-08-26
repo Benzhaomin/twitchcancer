@@ -57,13 +57,13 @@ class PubSubManager:
       self.subscriptions[topic].remove(client)
       logger.debug('unsubscribed %s from %s', client, topic)
 
-      # remove empty records
-      if len(self.subscriptions[topic]) == 0:
-        logger.debug('%s lost its last subscriber, removing it', topic)
-        del self.subscriptions[topic]
-    except KeyError:
-      logger.warn('unsubscribed %s from %s but this topic doesn\'t exist', client, topic)
-      pass
+    except KeyError as e:
+      logger.warn('unsubscribed %s from %s failed with: %s', client, topic, e)
+
+    # remove empty records
+    if len(self.subscriptions[topic]) == 0:
+      logger.debug('%s lost its last subscriber, removing it', topic)
+      del self.subscriptions[topic]
 
   # let clients unsubscribe from all topics at once
   def unsubscribe_all(self, client):
