@@ -49,6 +49,9 @@ class PubSubVariableTopic(PubSubTopic):
   def __init__(self, name, callback, sleep):
     super().__init__(name, callback, sleep)
 
+    # cached data can belong to multiple topics depending on our variable
+    self.data = {}
+
     if not self.name.endswith(".*"):
       raise NotImplementedError("regexp topics must end with a variable part")
 
@@ -62,6 +65,7 @@ class PubSubVariableTopic(PubSubTopic):
 
   # return the topic's current data from cache or freshly computed
   def payload(self, useCache=False, **kwargs):
-    if not useCache or self.data is None:
-      self.data = self.callback(self.argument(kwargs["name"]))
-    return self.data
+    if not useCache or self.data is None or kwargs["name"] not in self.data:
+      self.data[kwargs["name"]] = self.callback(self.argument(kwargs["name"]))
+
+    return self.data[kwargs["name"]]
