@@ -53,7 +53,11 @@ class PubSubProtocol(WebSocketServerProtocol):
     PubSubManager.instance().unsubscribe_all(self)
 
   def onMessage(self, payload, isBinary):
-    s = json.loads(payload.decode('utf8'))
+    try:
+      s = json.loads(payload.decode('utf8'))
+    except ValueError as e:
+      logger.warn('got a bogus payload from %s: %s', self, e)
+      return
 
     # handle subscriptions
     if 'subscribe' in s:
