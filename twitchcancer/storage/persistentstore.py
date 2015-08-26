@@ -216,45 +216,67 @@ class PersistentStore:
   # returns the personal records of a particular channel
   # @db.read
   def channel(self, channel):
-    result = self.db.leaderboard.find_one({'_id': channel})
+    record = self.db.leaderboard.find_one({'_id': channel})
 
-    if not result:
+    if not record:
       return {}
 
-    result['channel'] = result['_id']
+    return {
+      'channel': record['_id'],
 
-    result['minute']['cancer']['rank'] = self._leaderboard_rank('minute.cancer.value', result['minute']['cancer']['value'])
-    result['minute']['messages']['rank'] = self._leaderboard_rank('minute.messages.value', result['minute']['messages']['value'])
-    result['minute']['cpm']['rank'] = self._leaderboard_rank('minute.cpm.value', result['minute']['cpm']['value'])
+      # best minute stats
+      'minute': {
+        'cancer': {
+          'value':  record['minute']['cancer']['value'],
+          'date':  record['minute']['cancer']['date'],
+          'rank': self._leaderboard_rank('minute.cancer.value', record['minute']['cancer']['value'])
+        },
+        'messages': {
+          'value':  record['minute']['messages']['value'],
+          'date':  record['minute']['messages']['date'],
+          'rank': self._leaderboard_rank('minute.messages.value', record['minute']['messages']['value'])
+        },
+        'cpm': {
+          'value':  record['minute']['cpm']['value'],
+          'date':  record['minute']['cpm']['date'],
+          'rank': self._leaderboard_rank('minute.cpm.value', record['minute']['cpm']['value'])
+        },
+      },
 
-    result['total']['cancer'] = {
-      'value': result['total']['cancer'],
-      'rank': self._leaderboard_rank('total.cancer', result['total']['cancer'])
+      # total stats
+      'total': {
+        'cancer': {
+          'value':  record['total']['cancer'],
+          'rank': self._leaderboard_rank('total.cancer', record['total']['cancer'])
+        },
+        'messages': {
+          'value':  record['total']['messages'],
+          'rank': self._leaderboard_rank('total.messages', record['total']['messages'])
+        },
+        'cpm': {
+          'value':  record['total']['cpm'],
+          'rank': self._leaderboard_rank('total.cpm', record['total']['cpm'])
+        },
+        'duration': {
+          'value':  int(record['average']['duration']) * 60, # minutes to seconds
+          'rank': self._leaderboard_rank('average.duration', record['average']['duration'])
+        },
+        'since': record['total']['date'],
+      },
+
+      # average stats
+      'average': {
+        'cancer': {
+          'value':  record['average']['cancer'],
+          'rank': self._leaderboard_rank('average.cancer', record['average']['cancer'])
+        },
+        'messages': {
+          'value':  record['average']['messages'],
+          'rank': self._leaderboard_rank('average.messages', record['average']['messages'])
+        },
+        'cpm': {
+          'value':  record['average']['cpm'],
+          'rank': self._leaderboard_rank('average.cpm', record['average']['cpm'])
+        },
+      },
     }
-
-    result['total']['messages'] = {
-      'value': result['total']['messages'],
-      'rank': self._leaderboard_rank('total.messages', result['total']['messages'])
-    }
-
-    result['total']['cpm'] = {
-      'value': result['total']['cpm'],
-      'rank': self._leaderboard_rank('total.cpm', result['total']['cpm'])
-    }
-
-    result['average']['cancer'] = {
-      'value': result['average']['cancer'],
-      'rank': self._leaderboard_rank('average.cancer', result['average']['cancer'])
-    }
-
-    result['average']['messages'] = {
-      'value': result['average']['messages'],
-      'rank': self._leaderboard_rank('average.messages', result['average']['messages'])
-    }
-
-    result['average']['cpm'] = {
-      'value': result['average']['cpm'],
-      'rank': self._leaderboard_rank('average.cpm', result['average']['cpm'])
-    }
-
-    return result
