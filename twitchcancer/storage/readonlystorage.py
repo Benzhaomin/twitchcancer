@@ -18,6 +18,7 @@ from twitchcancer.storage.storageinterface import StorageInterface
 #  - storage.channel()
 #  - storage.cancer()
 #  - storage.leaderboard()
+#  - storage.status()
 class ReadOnlyStorage(StorageInterface):
 
   def __init__(self):
@@ -52,6 +53,38 @@ class ReadOnlyStorage(StorageInterface):
   # @db.read()
   def channel(self, channel):
     return self._store.channel(channel)
+
+  # returns an overview of the current status of both the db and the monitoring process
+  # @db.read()
+  # @socket.read()
+  def status(self):
+    self.socket.send(b'')
+
+    # get totals from the database
+    status = {
+      'total': self._store.status(),
+      'live': {
+        'channels': 0,
+        'messages': 0,
+        'cancer': 0,
+      }
+    }
+
+    # get live status from the monitor process
+    if self.poller.poll(2*1000): # 2s timeout in milliseconds
+      live = self.socket.recv_pyobj()
+
+      # add up current cancer levels to have stats
+      for channel in live:
+        status['live']['messages'] += channel['messages']
+        status['live']['cancer'] += channel['cancer']
+      status['live']['channels'] = len(live)
+    else:
+      logger.warn("no reply to a live cancer request, will reconnect")
+      self._disconnect()
+      self._connect()
+
+    return status
 
   # create a socket and connect to the cancer server
   # @socket.connect()

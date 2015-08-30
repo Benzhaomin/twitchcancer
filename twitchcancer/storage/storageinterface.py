@@ -18,6 +18,10 @@ class StorageInterface:
   def channel(self, channel):
     raise NotImplementedError()
 
+  # returns an overview of the current status of both the db and the monitoring process
+  def status(self):
+    raise NotImplementedError()
+
   # stores a message and its cancer points
   def store(self, channel, cancer):
     raise NotImplementedError()

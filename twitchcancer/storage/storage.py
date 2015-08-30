@@ -65,6 +65,14 @@ class Storage(StorageInterface):
 
     return self.storage.channel(channel)
 
+  # defaults to ReadOnlyStorage
+  def status(self):
+    if not self.storage:
+      from twitchcancer.storage.readonlystorage import ReadOnlyStorage
+      self.storage = ReadOnlyStorage()
+
+    return self.storage.status()
+
   # defaults to MemoryStorage
   def store(self, channel, cancer):
     # messages are stored in-memory only

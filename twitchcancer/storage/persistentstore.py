@@ -280,3 +280,15 @@ class PersistentStore:
         },
       },
     }
+
+  # returns stats about the database
+  # @db.read
+  def status(self):
+    return self.db.leaderboard.aggregate([{
+      '$group': {
+        '_id': 'null',
+        'channels': { '$sum': 1 },
+        'messages': { '$sum': '$total.messages' },
+        'cancer': { '$sum': '$total.cancer' }
+      }
+    }]).next()

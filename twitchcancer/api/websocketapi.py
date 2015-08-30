@@ -30,6 +30,7 @@ def create_publishers():
   topics = [
     PubSubTopic('twitchcancer.live', storage.cancer, 1),
     PubSubTopic('twitchcancer.leaderboards', storage.leaderboards, 60),
+    PubSubTopic('twitchcancer.status', storage.status, 60),
     PubSubVariableTopic('twitchcancer.channel.*', storage.channel, 60),
   ]
 
