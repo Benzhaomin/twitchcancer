@@ -9,6 +9,10 @@ These 4 components run independently from each other and communicate through Zer
 - python setup.py install
 - edit your local config file (see Configuration)
 
+### Arch Linux
+
+See the [archlinux folder](pkg/archlinux) and the [PKGBUILD](pkg/archlinux/PKGBUILD).
+
 ### Configuration
 
 You can use the `-f` or `--config` switch to pass the path of a configuration file overriding any of the [default settings](twitchcancer/config.default.yml).
