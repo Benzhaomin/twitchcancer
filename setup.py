@@ -6,7 +6,7 @@ scripts = set()
 requires = set(['pyzmq >=14.7.0', 'PyYAML >= 3.11'])
 extras_requires = {'monitor': set(), 'record': set(), 'expose': set()}
 test_requires = set()
-excludes = set('tests')
+excludes = set(['tests', 'tests.*'])
 package_data = {'twitchcancer': ['config.default.yml']}
 
 libs = {
