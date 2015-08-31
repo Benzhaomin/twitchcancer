@@ -4,8 +4,9 @@ from setuptools import setup, find_packages
 # modular dependencies
 scripts = set()
 requires = set(['pyzmq >=14.7.0', 'PyYAML >= 3.11'])
-extras_requires = set()
-excludes = set()
+extras_requires = {'monitor': set(), 'record': set(), 'expose': set()}
+test_requires = set()
+excludes = set('tests')
 package_data = {'twitchcancer': ['config.default.yml']}
 
 libs = {
@@ -14,8 +15,7 @@ libs = {
   'irc': 'irc >= 11.0.1',
 }
 
-## chat monitoring
-# main script
+# Monitor
 scripts.add('scripts/twitchcancer-monitor')
 
 # packages
@@ -25,38 +25,40 @@ scripts.add('scripts/twitchcancer-monitor')
 # ("twitchcancer.symptom")
 
 # web-sockets need autobahn
-extras_requires.add(libs['autobahn'])
+extras_requires['monitor'].add(libs['autobahn'])
+test_requires.add(libs['autobahn'])
 
 # irc needs irc
-extras_requires.add(libs['irc'])
+extras_requires['monitor'].add(libs['irc'])
 
 # diagnosis needs a list of emotes
 package_data['twitchcancer.symptom'] = ['emotes.txt', 'banned.txt']
 
-## API
-# main script
+# Record
+scripts.add('scripts/twitchcancer-record')
+
+# persistent storing needs mongodb
+extras_requires['record'].add(libs['pymongo'])
+
+# Expose
 scripts.add('scripts/twitchcancer-expose')
 
 # packages
 # ("twitchcancer.api")
 
 # persistent storing needs mongodb
-extras_requires.add(libs['pymongo'])
+extras_requires['expose'].add(libs['pymongo'])
 
 # web-sockets need autobahn
-extras_requires.add(libs['autobahn'])
+extras_requires['expose'].add(libs['autobahn'])
 
-## cancer levels recording
-# main script
-scripts.add('scripts/twitchcancer-record')
-
-# persistent storing needs mongodb
-extras_requires.add(libs['pymongo'])
-
+'''
 print("scripts", scripts)
 print("requires", requires)
 print("excludes", excludes)
 print("extras_requires", extras_requires)
+print("tests_require", test_requires)
+'''
 
 # setup
 setup(
@@ -64,9 +66,11 @@ setup(
   version = '0.1.3',
   packages = find_packages(exclude=excludes),
   scripts = scripts,
-  install_requires = requires,
   package_data = package_data,
   test_suite = 'tests',
+  install_requires = requires,
+  extras_require = extras_requires,
+  tests_require = test_requires,
 
   # metadata
   author = 'Benjamin Maisonnas',
@@ -76,5 +80,3 @@ setup(
   #keywords = "",
   url = 'http://github.com/benzhaomin/twitchcancer',
 )
-
-
