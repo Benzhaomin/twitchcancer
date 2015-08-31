@@ -21,8 +21,8 @@ if __name__ == "__main__":
   parser.add_argument('--viewers', dest='viewers', default=1000, type=int,
     help="minimum viewer count to monitor channels (default: 1000)")
 
-  parser.add_argument("--protocol", dest="protocol", default="websocket",
-    help="protocol to use to monitor chat channels, websocket or irc (default: websocket)")
+  parser.add_argument("--protocol", dest="protocol", default="irc",
+    help="protocol to use to monitor chat channels, websocket or irc (default: irc)")
 
   args = parser.parse_args()
 

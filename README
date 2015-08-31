@@ -1,6 +1,6 @@
 # TwitchCancer
 
-Suite of tool targeted at diagnosing, monitoring and recording data about chat cancer on Twitch.
+Suite of tools targeted at diagnosing, monitoring and recording data about chat cancer on Twitch.
 
 These 4 components run independently from each other and communicate through ZeroMQ sockets and WebSockets. Any single one can be restarted or down, the others will reconnect when possible.
 

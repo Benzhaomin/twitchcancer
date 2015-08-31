@@ -61,7 +61,7 @@ print("extras_requires", extras_requires)
 # setup
 setup(
   name = 'twitchcancer',
-  version = '0.1.2',
+  version = '0.1.3',
   packages = find_packages(exclude=excludes),
   scripts = scripts,
   install_requires = requires,
@@ -71,7 +71,7 @@ setup(
   # metadata
   author = 'Benjamin Maisonnas',
   author_email = 'ben@wainei.net',
-  description = 'Suite of tools to monitor and analyze Twitch chatrooms.',
+  description = 'Suite of tools to monitor and analyze chat cancer in Twitch chatrooms.',
   license = 'GPLv3',
   #keywords = "",
   url = 'http://github.com/benzhaomin/twitchcancer',
