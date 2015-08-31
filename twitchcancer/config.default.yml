@@ -26,3 +26,8 @@ monitor:
     chat:
         username: username      # your twitch username
         password: oauth:key     # http://twitchapps.com/tmi/
+
+# what and where to log
+logging:
+    level: WARNING
+    output: "stderr" # or eg. /var/log/twitchcancer

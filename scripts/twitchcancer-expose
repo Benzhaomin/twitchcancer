@@ -6,13 +6,13 @@ import logging
 logger = logging.getLogger('twitchcancer')
 
 from twitchcancer.config import Config
+from twitchcancer.utils.logging import setup_logger
 from twitchcancer.api.api import run
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  # runs the API
 
-  parser.add_argument('--log', dest='loglevel', default='WARNING',
+  parser.add_argument('--log', dest='loglevel',
     help="set the level of messages to display")
 
   parser.add_argument('-f', '--config', dest='config',
@@ -20,18 +20,13 @@ if __name__ == "__main__":
 
   args = parser.parse_args()
 
-  # set logger level
-  numeric_level = getattr(logging, args.loglevel.upper(), None)
-  if not isinstance(numeric_level, int):
-    raise ValueError('Invalid log level: %s' % loglevel)
-
-  logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-  logger.setLevel(numeric_level)
-
   # load the config
   if args.config:
     Config.load(args.config)
 
-  # start running the api forever
-  run(args)
+  # set the logging stack up
+  setup_logger(logger, args.loglevel, Config, "expose.log")
 
+  # start running the api forever
+  logger.debug("Started")
+  run(args)
