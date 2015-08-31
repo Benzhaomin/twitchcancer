@@ -1,0 +1,11 @@
+# default options at https://github.com/Benzhaomin/TwitchCancer/blob/master/twitchcancer/config.default.yml
+
+# you must setup valid credentials below to receive messages in the monitor service
+monitor:
+    chat:
+        username: username      # your Twitch username
+        password: oauth:key     # http://twitchapps.com/tmi/
+
+# what and where to log
+logging:
+    output: /var/log/twitchcancer
