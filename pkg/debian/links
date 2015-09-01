@@ -1,0 +1,3 @@
+usr/share/twitchcancer/twitchcancer-expose usr/bin/twitchcancer-expose
+usr/share/twitchcancer/twitchcancer-monitor usr/bin/twitchcancer-monitor
+usr/share/twitchcancer/twitchcancer-record usr/bin/twitchcancer-record
