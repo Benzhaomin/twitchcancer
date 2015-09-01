@@ -1,6 +1,6 @@
 
 Very High
-- add init scripts for each 3 scripts (systemd)
+-
 
 High
 - api unit testing
