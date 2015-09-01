@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 # modular dependencies
 scripts = set()
-requires = set(['pyzmq >=14.7.0', 'PyYAML >= 3.11'])
+requires = set(['pyzmq >=14.4.0', 'PyYAML >= 3.11'])
 extras_requires = {'monitor': set(), 'record': set(), 'expose': set()}
 test_requires = set()
 excludes = set(['tests', 'tests.*'])
