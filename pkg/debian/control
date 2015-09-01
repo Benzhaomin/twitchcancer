@@ -19,7 +19,7 @@ Depends:
   python3-zmq (>= 14.4.0),
   python3-yaml (>= 3.11)
 Recommends:
-  python3-pymongo (>= 2.7.0)
+  python3-pymongo (>= 3.0.0)
 Description: Suite of tools to analyze chat cancer in Twitch.tv's chatrooms
  TwithCancer is made of 3 services that monitor chat channels, record cancer
   levels and expose summary data over a web socket API.

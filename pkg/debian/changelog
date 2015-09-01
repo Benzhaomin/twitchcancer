@@ -1,3 +1,9 @@
+twitchcancer (0.1.5-2) unstable; urgency=low
+
+  * Package update: python3-pymongo must be >= 3.0.0
+
+ -- Benjamin Maisonnas <ben@wainei.net>  Tue, 01 Sep 2015 20:34:35 +0200
+
 twitchcancer (0.1.5-1) unstable; urgency=low
 
   * New upstream release: added logging configuration support
