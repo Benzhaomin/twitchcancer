@@ -1,6 +1,6 @@
 
 Very High
-- api unit testing
+- storage layer unit testing (persistent and memory)
 - api stress test (optimize, ujson, websocket compression): target = 500 concurrent users
 
 High
