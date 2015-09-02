@@ -25,6 +25,18 @@ class PubSubTopic:
   def __str__(self):
     return self.name
 
+  # topics are uniquely identified by their name
+  def __eq__(self, other):
+    return self.name == other.name
+
+  # see __eq__
+  def __neq__(self, other):
+    return self.name != other.name
+
+  # see __eq__
+  def __hash__(self):
+    return hash(self.name)
+
   # find a topic by name
   def find(name):
     for t in PubSubTopic.instances:
