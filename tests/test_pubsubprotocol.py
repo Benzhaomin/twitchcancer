@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import json
+import datetime
+import unittest
+from unittest.mock import patch, MagicMock
+
+from twitchcancer.api.pubsubprotocol import PubSubProtocol
+
+PubSubProtocol.peer = "test"
+
+# PubSubProtocol.__str__()
+class TestPubSubProtocolStr(unittest.TestCase):
+
+  def test_str(self):
+    p = PubSubProtocol()
+    p.peer = "foo"
+    self.assertEqual(str(p), "foo")
+
+# PubSubProtocol.onConnect()
+class TestPubSubProtocolOnConnect(unittest.TestCase):
+
+  # check that we don't fail (we shouldn't do anything either)
+  def test_no_op(self):
+    p = PubSubProtocol()
+    p.onConnect(None)
+
+# PubSubProtocol.onOpen()
+class TestPubSubProtocolOnOpen(unittest.TestCase):
+
+  # check that we don't fail (we shouldn't do anything either)
+  def test_no_op(self):
+    p = PubSubProtocol()
+    p.onOpen()
+
+# PubSubProtocol.onClose()
+class TestPubSubProtocolOnClose(unittest.TestCase):
+
+  # check that we unsubscribe clients when they disconnect
+  @patch('twitchcancer.api.pubsubmanager.PubSubManager.unsubscribe_all')
+  def test_unsubscribe_all(self, unsubscribe_all):
+    p = PubSubProtocol()
+    p.onClose(True, 0, None)
+    unsubscribe_all.assert_called_once_with(p)
+
+# PubSubProtocol.onMessage()
+class TestPubSubProtocolOnMessage(unittest.TestCase):
+
+  # check that we handle bogus payloads (by doing nothing)
+  @patch('twitchcancer.api.pubsubmanager.PubSubManager.instance')
+  def test_bogus_payload(self, instance):
+    p = PubSubProtocol()
+    p.onMessage(b'', True)
+    p.onMessage(b'foo', True)
+    p.onMessage(b'{foo}', True)
+    p.onMessage(b'{"foo"}', True)
+
+    self.assertFalse(instance.called)
+
+  # check that we handle unknown commands (by doing nothing)
+  @patch('twitchcancer.api.pubsubmanager.PubSubManager.instance')
+  def test_unknown_command(self, instance):
+    p = PubSubProtocol()
+    p.onMessage(b'{"foo":"bar"}', True)
+
+    self.assertFalse(instance.called)
+
+  # check that we subscribe clients
+  @patch('twitchcancer.api.pubsubmanager.PubSubManager.subscribe')
+  def test_subscribe_command(self, subscribe):
+    p = PubSubProtocol()
+    p.onMessage(b'{"subscribe":"topic"}', True)
+
+    subscribe.assert_called_once_with(p, "topic")
+
+  # check that we publish data once on subscribing clients
+  @patch('twitchcancer.api.pubsubmanager.PubSubManager.publish_one')
+  def test_subscribe_publish_one(self, publish_one):
+    p = PubSubProtocol()
+    p.onMessage(b'{"subscribe":"topic"}', True)
+
+    publish_one.assert_called_once_with(p, "topic")
+
+  # check that we unsubscribe clients
+  @patch('twitchcancer.api.pubsubmanager.PubSubManager.unsubscribe')
+  def test_unsubscribe_command(self, unsubscribe):
+    p = PubSubProtocol()
+    p.onMessage(b'{"unsubscribe":"topic"}', True)
+
+    unsubscribe.assert_called_once_with(p, "topic")
+
+# PubSubProtocol.send()
+class TestPubSubProtocolSend(unittest.TestCase):
+
+  # check that we handle bogus payloads (by doing nothing)
+  @patch('twitchcancer.api.pubsubprotocol.PubSubProtocol.sendMessage')
+  def test_bogus_payload(self, sendMessage):
+    p = PubSubProtocol()
+    p.send("topic", p)
+    p.send(p, {'data': 'bar'})
+    p.send(p, p)
+
+    self.assertFalse(sendMessage.called)
+
+  # check that we send the message to the client
+  @patch('twitchcancer.api.pubsubprotocol.PubSubProtocol.sendMessage')
+  def test_send_message(self, sendMessage):
+    p = PubSubProtocol()
+    p.send("foo", "bar")
+    sendMessage.assert_called_once()
+
+  # check that we send the message to the client
+  @patch('twitchcancer.api.pubsubprotocol.PubSubProtocol.sendMessage')
+  def test_jsonify(self, sendMessage):
+    now = datetime.datetime.now()
+
+    p = PubSubProtocol()
+    p.send("foo", now)
+
+    args, kwargs = sendMessage.call_args
+    actual = json.loads(args[0].decode('utf8'))
+
+    expected = {"topic": "foo", "data": now.isoformat()}
+
+    self.assertEqual(actual, expected)
