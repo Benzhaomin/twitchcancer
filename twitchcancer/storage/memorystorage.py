@@ -88,9 +88,3 @@ class MemoryStorage(StorageInterface):
         self.pubsub_socket.send_multipart([b'summary', pickle.dumps(record)])
 
       logger.info('published leaderboards of round %s with messages from %s channels', date, len(channels))
-
-# TODO: add proper unit testing
-if __name__ == "__main__":
-  logging.basicConfig(level=logging.DEBUG)
-
-  storage = MemoryStorage()
