@@ -58,8 +58,6 @@ class ReadOnlyStorage(StorageInterface):
   # @db.read()
   # @socket.read()
   def status(self):
-    self.socket.send(b'')
-
     # get totals from the database
     status = {
       'total': self._store.status(),
@@ -70,19 +68,14 @@ class ReadOnlyStorage(StorageInterface):
       }
     }
 
-    # get live status from the monitor process
-    if self.poller.poll(2*1000): # 2s timeout in milliseconds
-      live = self.socket.recv_pyobj()
+    # get live cancer levels
+    live = self.cancer()
 
-      # add up current cancer levels to have stats
-      for channel in live:
-        status['live']['messages'] += channel['messages']
-        status['live']['cancer'] += channel['cancer']
-      status['live']['channels'] = len(live)
-    else:
-      logger.warning("no reply to a live cancer request, will reconnect")
-      self._disconnect()
-      self._connect()
+    # add up current cancer levels to have stats
+    for channel in live:
+      status['live']['messages'] += channel['messages']
+      status['live']['cancer'] += channel['cancer']
+    status['live']['channels'] = len(live)
 
     return status
 
@@ -101,13 +94,3 @@ class ReadOnlyStorage(StorageInterface):
     self.socket.setsockopt(zmq.LINGER, 0)
     self.socket.close()
     self.poller.unregister(self.socket)
-
-# TODO: add proper unit testing
-if __name__ == "__main__":
-  logging.basicConfig(level=logging.DEBUG)
-
-  storage = ReadOnlyStorage()
-
-  print(storage.cancer())
-  print(storage.leaderboards())
-  print(storage.channel('#forsenlol'))
