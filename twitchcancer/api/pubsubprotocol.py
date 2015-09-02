@@ -56,7 +56,7 @@ class PubSubProtocol(WebSocketServerProtocol):
     try:
       s = json.loads(payload.decode('utf8'))
     except ValueError as e:
-      logger.warn('got a bogus payload from %s: %s', self, e)
+      logger.warning('got a bogus payload from %s: %s', self, e)
       return
 
     # handle subscriptions

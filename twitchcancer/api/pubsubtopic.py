@@ -30,7 +30,7 @@ class PubSubTopic:
     for t in PubSubTopic.instances:
       if t.match(name):
         return t
-    logger.warn('no result in find(%s)', name)
+    logger.warning('no result in find(%s)', name)
     return None
 
   # check whether name is the name of this topic

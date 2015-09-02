@@ -57,7 +57,7 @@ class IRCClient(irc.client.SimpleIRCClient):
 
     # make sure the channel exists
     if not irc.client.is_channel(channel):
-      logger.warn('channel %s not found on ', channel, self)
+      logger.warning('channel %s not found on ', channel, self)
       return
 
     # don't join the same channel twice
@@ -80,7 +80,7 @@ class IRCClient(irc.client.SimpleIRCClient):
 
     # make sure the channel exists
     if not irc.client.is_channel(channel):
-      logger.warn('channel %s not found on ', channel, self)
+      logger.warning('channel %s not found on ', channel, self)
       self.channels.remove(channel)
       return
 

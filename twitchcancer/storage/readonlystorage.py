@@ -39,7 +39,7 @@ class ReadOnlyStorage(StorageInterface):
     if self.poller.poll(2*1000): # 2s timeout in milliseconds
       return self.socket.recv_pyobj()
     else:
-      logger.warn("no reply to a live cancer request, will reconnect")
+      logger.warning("no reply to a live cancer request, will reconnect")
       self._disconnect()
       self._connect()
       return []
@@ -80,7 +80,7 @@ class ReadOnlyStorage(StorageInterface):
         status['live']['cancer'] += channel['cancer']
       status['live']['channels'] = len(live)
     else:
-      logger.warn("no reply to a live cancer request, will reconnect")
+      logger.warning("no reply to a live cancer request, will reconnect")
       self._disconnect()
       self._connect()
 

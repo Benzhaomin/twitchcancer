@@ -58,7 +58,7 @@ class PubSubManager:
       logger.debug('unsubscribed %s from %s', client, topic)
 
     except KeyError as e:
-      logger.warn('unsubscribed %s from %s failed with: %s', client, topic, e)
+      logger.warning('unsubscribed %s from %s failed with: %s', client, topic, e)
 
     # remove empty records
     if len(self.subscriptions[topic]) == 0:
