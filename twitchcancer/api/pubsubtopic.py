@@ -64,7 +64,7 @@ class PubSubVariableTopic(PubSubTopic):
     # cached data can belong to multiple topics depending on our variable
     self.data = {}
 
-    if not self.name.endswith(".*"):
+    if not self.name.endswith(".*") or len(self.name) < 3:
       raise NotImplementedError("regexp topics must end with a variable part")
 
   # checks whether name is like the name of this topic
