@@ -108,7 +108,7 @@ class TestPubSubProtocolSend(unittest.TestCase):
   def test_send_message(self, sendMessage):
     p = PubSubProtocol()
     p.send("foo", "bar")
-    sendMessage.assert_called_once()
+    self.assertEqual(sendMessage.call_count, 1)
 
   # check that we send the message to the client
   @patch('twitchcancer.api.pubsubprotocol.PubSubProtocol.sendMessage')

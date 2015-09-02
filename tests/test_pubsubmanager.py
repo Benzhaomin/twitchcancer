@@ -9,13 +9,13 @@ from twitchcancer.api.pubsubmanager import PubSubManager
 # PubSubManager.instance()
 class TestPubSubManagerInstance(unittest.TestCase):
 
-  # quickly test most cases
+  # check that we only store one instance of any topic
   @patch('twitchcancer.api.pubsubmanager.PubSubManager.__new__', side_effect=PubSubManager.__new__)
   def test_all(self, new):
     PubSubManager.instance()
     PubSubManager.instance()
 
-    new.assert_called_once()
+    self.assertEqual(new.call_count, 1)
 
 # PubSubManager.subscribe()
 class TestPubSubManagerSubscribe(unittest.TestCase):
