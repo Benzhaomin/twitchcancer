@@ -90,26 +90,3 @@ class Storage(StorageInterface):
       self.storage = WriteOnlyStorage()
 
     self.storage.record()
-
-if __name__ == "__main__":
-  logging.basicConfig(level=logging.DEBUG)
-
-
-# TODO: add proper unit testing
-if __name__ == "__main__":
-  logging.basicConfig(level=logging.DEBUG)
-
-  try:
-    storage = Storage()
-    storage.cancer()
-    storage.record()
-  except NotImplementedError:
-    pass
-
-  try:
-    storage = Storage()
-    storage.channel('#forsenlol')
-    storage.store('test', 'test')
-  except NotImplementedError:
-    pass
-
