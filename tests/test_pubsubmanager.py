@@ -10,11 +10,12 @@ from twitchcancer.api.pubsubmanager import PubSubManager
 class TestPubSubManagerInstance(unittest.TestCase):
 
   # quickly test most cases
-  def test_all(self):
-    with patch('twitchcancer.api.pubsubmanager.PubSubManager.__new__', side_effect=PubSubManager.__new__) as m:
-      PubSubManager.instance()
-      PubSubManager.instance()
-      m.assert_called_once()
+  @patch('twitchcancer.api.pubsubmanager.PubSubManager.__new__', side_effect=PubSubManager.__new__)
+  def test_all(self, new):
+    PubSubManager.instance()
+    PubSubManager.instance()
+
+    new.assert_called_once()
 
 # PubSubManager.subscribe()
 class TestPubSubManagerSubscribe(unittest.TestCase):
@@ -81,17 +82,17 @@ class TestPubSubManagerUnsubscribe(unittest.TestCase):
 class TestPubSubManagerUnsubscribeAll(unittest.TestCase):
 
   # check that unsubcribe is called for all topics
-  def test_unsubscribe_all(self):
-    with patch('twitchcancer.api.pubsubmanager.PubSubManager.unsubscribe') as m:
-      p = PubSubManager()
-      p.subscriptions["topic"] = set(["client"])
-      p.subscriptions["topic 2"] = set(["client"])
+  @patch('twitchcancer.api.pubsubmanager.PubSubManager.unsubscribe')
+  def test_unsubscribe_all(self, unsubscribe):
+    p = PubSubManager()
+    p.subscriptions["topic"] = set(["client"])
+    p.subscriptions["topic 2"] = set(["client"])
 
-      p.unsubscribe_all("client")
+    p.unsubscribe_all("client")
 
-      # check the number of calls
-      # TODO: check the actual arguments of each call
-      self.assertEqual(len(m.mock_calls), 2)
+    # check the number of calls
+    # TODO: check the actual arguments of each call
+    self.assertEqual(unsubscribe.call_count, 2)
 
 # PubSubManager.publish()
 class TestPubSubManagerPublish(unittest.TestCase):
@@ -141,12 +142,12 @@ class TestPubSubManagerPublishOne(unittest.TestCase):
       # make sure the client got data
       client.send.assert_called_once_with("topic", "payload")
 
-  def test_publish_one_not_existing(self):
+  @patch('twitchcancer.api.pubsubtopic.PubSubTopic.find', return_value=None)
+  def test_publish_one_not_existing(self, find):
     client = MagicMock()
     topic = MagicMock()
 
-    with patch('twitchcancer.api.pubsubtopic.PubSubTopic.find', return_value=None) as m:
-      PubSubManager().publish_one(client, "topic")
+    PubSubManager().publish_one(client, "topic")
 
-      # make sure the client didn't get called
-      self.assertFalse(client.send.called)
+    # make sure the client didn't get called
+    self.assertFalse(client.send.called)
