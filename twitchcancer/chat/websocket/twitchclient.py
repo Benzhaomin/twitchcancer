@@ -27,12 +27,12 @@ def record(parsed):
 class TwitchClient(WebSocketClientProtocol):
 
   def onOpen(self):
-    self.sendMessage('CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership'.encode());
-    self.sendMessage('PASS {0}'.format(Config.get("monitor.chat.password").lower()).encode());
-    self.sendMessage('NICK {0}'.format(Config.get("monitor.chat.username").lower()).encode());
+    self.sendMessage('CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership'.encode())
+    self.sendMessage('PASS {0}'.format(Config.get("monitor.chat.password").lower()).encode())
+    self.sendMessage('NICK {0}'.format(Config.get("monitor.chat.username").lower()).encode())
 
     for channel in self.channels:
-      self.sendMessage('JOIN {0}'.format(channel).encode());
+      self.sendMessage('JOIN {0}'.format(channel).encode())
       logger.info("auto-joining %s", channel)
 
   def onMessage(self, payload, isBinary):
@@ -43,7 +43,7 @@ class TwitchClient(WebSocketClientProtocol):
 
       # respond to PING
       if message[0:4] == "PING":
-        self.sendMessage('PONG :tmi.twitch.tv'.encode());
+        self.sendMessage('PONG :tmi.twitch.tv'.encode())
         logger.debug("PONG-ed")
       # try to parse and record messages
       else:
@@ -54,13 +54,13 @@ class TwitchClient(WebSocketClientProtocol):
   @asyncio.coroutine
   def join(self, channel):
     self.channels.add(channel)
-    self.sendMessage('JOIN {0}'.format(channel).encode());
+    self.sendMessage('JOIN {0}'.format(channel).encode())
     logger.info("joining %s", channel)
 
   @asyncio.coroutine
   def leave(self, channel):
     self.channels.remove(channel)
-    self.sendMessage('PART {0}'.format(channel).encode());
+    self.sendMessage('PART {0}'.format(channel).encode())
     logger.info("leaving %s", channel)
 
   channel_message_re = re.compile(".*? PRIVMSG (#[a-zA-z0-9_]*?) :(.*)")
