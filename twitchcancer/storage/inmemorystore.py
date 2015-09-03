@@ -27,7 +27,7 @@ class InMemoryStore:
     self.messages = collections.deque()
     self.messages_lock = threading.Lock()
 
-    logger.info('created an InMemorytStore object')
+    logger.info('created an InMemoryStore object')
 
   # returns a summary of cancer and message by channel grouped by minute, processed messages are deleted forever
   # @memory.read()
