@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import json
-import urllib.request
 import time
 import random
 from threading import Thread
@@ -15,6 +13,7 @@ from twitchcancer.chat.irc.irc import IRC
 
 from twitchcancer.symptom.diagnosis import Diagnosis
 from twitchcancer.storage.storage import Storage
+from twitchcancer.utils.twitchapi import TwitchApi
 
 class ThreadedIRCMonitor(Monitor):
 
@@ -100,36 +99,48 @@ class ThreadedIRCMonitor(Monitor):
 
   # find a server hosting a channel
   def find_server(self, channel):
-    with urllib.request.urlopen('http://api.twitch.tv/api/channels/{0}/chat_properties'.format(channel.replace("#", ""))) as response:
-      j = json.loads(response.read().decode())
-      return random.choice(j['chat_servers'])
+    try:
+      result = TwitchApi.chat_properties(channel)
+
+      if result:
+        return random.choice(result['chat_servers'])
+    except KeyError as e:
+      logger.warning("got an empty json response to a chat properties request %s", e)
+
+    return None
 
   # join big channels, leave offline ones
   def autojoin(self):
-    # get a list of channels from https://api.twitch.tv/kraken/streams/?limit=100
+    # get a list of channels from Twitch
     # join any channel over n viewers
     # leave any channel under n viewers (including offline ones)
     try:
-      # synchronous HTTP request, fine because we'd sleep otherwise
-      with urllib.request.urlopen('https://api.twitch.tv/kraken/streams/?limit=100') as response:
-        data = json.loads(response.read().decode())
+      data = TwitchApi.stream_list()
 
-        # leave any channel out of the top 100 (offline or just further down the list)
-        online_channels = ['#'+stream['channel']['name'] for stream in data['streams']]
+      if not data:
+        return
 
-        for channel in self.channels:
-          if channel not in online_channels:
-            self.leave(channel)
+      # extract a list of channels from Twitch's API response
+      online_channels = ['#'+stream['channel']['name'] for stream in data['streams']]
 
-        # join channels over n viewers, leave channels under n viewers
-        for stream in data['streams']:
-          if stream['viewers'] > self.viewers:
-            self.join('#'+stream['channel']['name'])
-          else:
-            self.leave('#'+stream['channel']['name'])
-    except urllib.error.URLError as e:
-      # ignore the error, we'll try again next cycle
-      logger.warning("stream list request failed %s", e)
+      # ignore Twitch's data if it looks buggy (no streams online is unlikely)
+      if (len(online_channels) == 0):
+        return
+
+      # leave any channel out of the top 100 (offline or just further down the list)
+      for channel in self.channels:
+        if channel not in online_channels:
+          self.leave(channel)
+
+      # join channels over n viewers, leave channels under n viewers
+      for stream in data['streams']:
+        if stream['viewers'] > self.viewers:
+          self.join('#'+stream['channel']['name'])
+        else:
+          self.leave('#'+stream['channel']['name'])
+    except KeyError as e:
+      logger.warning("got an empty json response to a stream list request %s", e)
+      return
 
   # returns the client connected to the server where a channel was joined
   def get_client(self, channel):
