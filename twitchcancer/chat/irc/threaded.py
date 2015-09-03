@@ -71,6 +71,10 @@ class ThreadedIRCMonitor(Monitor):
     # get a random server hosting this channel
     server = self.find_server(channel)
 
+    # if we didn't get a server for whatever reason just exit here and stay open to retries
+    if not server:
+      return
+
     # connect to new servers
     self.connect(server)
 
@@ -86,9 +90,13 @@ class ThreadedIRCMonitor(Monitor):
       return
 
     # tell the client to leave the channel
-    logger.debug("will leave channel %s", channel)
     client = self.get_client(channel)
-    client.leave(channel)
+
+    if client:
+      logger.debug("will leave channel %s", channel)
+      client.leave(channel)
+    else:
+      logger.warning("couldn't find the client connected to %s", channel)
 
   # find a server hosting a channel
   def find_server(self, channel):
