@@ -81,7 +81,7 @@ class IRC:
     if len(message) > 0:
       self.messages.put((channel, message))
     else:
-      logged.warning("empty message: %s", message)
+      logger.warning("empty message: %s", message)
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
