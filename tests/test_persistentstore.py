@@ -5,8 +5,38 @@ import datetime
 import unittest
 from unittest.mock import patch, MagicMock
 
-from twitchcancer.config import Config
+import pymongo
+
 from twitchcancer.storage.persistentstore import PersistentStore
+
+# PersistentStore using a test database
+class TestingDatabasePersistentStore(PersistentStore):
+  def __init__(self, db):
+    self.db = db
+
+# sets up and tears down a mongodb database to run tests on
+class TestPersistentStoreUsingDB(unittest.TestCase):
+
+  COLLECTION = "twitchcancer_tests"
+
+  def setUp(self):
+    try:
+      self.client = pymongo.MongoClient('mongodb://localhost:27017/', connectTimeoutMS=300, serverSelectionTimeoutMS=300)
+      self.client.server_info()
+
+      self.db = self.client[self.COLLECTION]
+    except pymongo.errors.ServerSelectionTimeoutError:
+      raise unittest.SkipTest("couldn't connect to a test database at mongodb://localhost:27017/")
+
+  def tearDown(self):
+    if self.db:
+      self.client.drop_database(self.COLLECTION)
+
+  def get_test_store(self):
+    store = TestingDatabasePersistentStore(self.db)
+    self.db.leaderboard.drop()
+
+    return store
 
 # PersistentStore.__init__()
 class TestPersistentStoreInit(unittest.TestCase):
@@ -37,17 +67,11 @@ class TestPersistentStoreLeaderboard(unittest.TestCase):
 # PersistentStore._history_to_leaderboard()
 # PersistentStore.leaderboards()
 # PersistentStore.leaderboard()
-class TestPersistentStoreLeaderboardComprehensive(unittest.TestCase):
-
-  def setUp(self):
-    Config.config['record']['mongodb']['database'] = "twitchcancer_tests"
+class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
 
   # check that adding and querying for leaderboards works correctly
-  def test_comprehensive(self):
-  # uncomment to disable
-  #def dont_test_comprehensive():
-    p = PersistentStore()
-    p.db.leaderboard.drop()
+  def test_using_db(self):
+    p = self.get_test_store()
 
     channel = "channel"
     now1 = datetime.datetime.now().replace(microsecond=0)
@@ -90,25 +114,21 @@ class TestPersistentStoreLeaderboardComprehensive(unittest.TestCase):
     compare(actual, expected, 'cpm', 'average')
     compare(actual, expected, 'cpm', 'total')
 
-  def tearDown(self):
-    p = PersistentStore()
-    p.db.leaderboard.drop()
-
 # PersistentStore._leaderboard_rank()
 class TestPersistentStoreLeaderboardRank(unittest.TestCase):
   pass
 
-# PersistentStore._leaderboard_rank()
 # PersistentStore.channel()
 class TestPersistentStoreChannel(unittest.TestCase):
+  pass
 
-  def setUp(self):
-    Config.config['record']['mongodb']['database'] = "twitchcancer_tests"
+# PersistentStore._leaderboard_rank()
+# PersistentStore.channel()
+class TestPersistentStoreChannelUsingDB(TestPersistentStoreUsingDB):
 
   # check that adding records and querying for channel stats works correctly
-  def test_comprehensive(self):
-    p = PersistentStore()
-    p.db.leaderboard.drop()
+  def test_using_db(self):
+    p = self.get_test_store()
 
     channel = "channel"
     now1 = datetime.datetime.now().replace(microsecond=0)
@@ -156,20 +176,16 @@ class TestPersistentStoreChannel(unittest.TestCase):
     compare(actual, expected, 'average', 'cpm')
     compare(actual, expected, 'total', 'cpm')
 
-  def tearDown(self):
-    p = PersistentStore()
-    p.db.leaderboard.drop()
-
 # PersistentStore.status()
 class TestPersistentStoreStatus(unittest.TestCase):
+  pass
 
-  def setUp(self):
-    Config.config['record']['mongodb']['database'] = "twitchcancer_tests"
+# PersistentStore.status()
+class TestPersistentStoreStatusUsingDB(TestPersistentStoreUsingDB):
 
   # check that adding records and querying for the overall status works correctly
-  def test_comprehensive(self):
-    p = PersistentStore()
-    p.db.leaderboard.drop()
+  def test_using_db(self):
+    p = self.get_test_store()
 
     channel = "channel"
     now1 = datetime.datetime.now().replace(microsecond=0)
@@ -182,7 +198,3 @@ class TestPersistentStoreStatus(unittest.TestCase):
     actual = p.status()
 
     self.assertEqual(actual, expected)
-
-  def tearDown(self):
-    p = PersistentStore()
-    p.db.leaderboard.drop()
