@@ -72,6 +72,10 @@ class IRCClient(irc.client.SimpleIRCClient):
     self.channels.add(channel)
 
   def leave(self, channel):
+    # don't even think about unknown channels
+    if channel not in self.channels:
+      return
+
     # just don't do anything if we're not connected
     if not self.connection.is_connected():
       logger.debug('%s not connected, no need to leave %s', self, channel)
