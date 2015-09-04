@@ -100,3 +100,17 @@ class TestStorageRecord(unittest.TestCase):
     s.record()
 
     self.assertEqual(s.storage.record.call_count, 1)
+
+# Storage.search()
+class TestStorageSearch(unittest.TestCase):
+
+  # check that we transmit calls to a concrete implementation
+  def test_transmit(self):
+    s = Storage()
+    s.storage = MagicMock()
+    s.storage.search = MagicMock()
+    search = "foo"
+
+    s.search(search)
+
+    s.storage.search.assert_called_once_with(search)

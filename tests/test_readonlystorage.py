@@ -163,6 +163,21 @@ class TestReadOnlyStorageStatus(unittest.TestCase):
 
     self.assertEqual(result, expected)
 
+# ReadOnlyStorage.search()
+class TestReadOnlyStorageSearch(unittest.TestCase):
+
+  # check that we transmit the call to a store
+  @patch('twitchcancer.storage.readonlystorage.ReadOnlyStorage.__init__', return_value=None)
+  def test_default(self, init):
+    r = ReadOnlyStorage()
+    r._store = MagicMock()
+    r._store.search = MagicMock(return_value="data")
+
+    result = r.search("foo")
+
+    self.assertEqual(result, "data")
+    self.assertEqual(r._store.search.call_count, 1)
+
 # ReadOnlyStorage._connect()
 class TestReadOnlyStorageConnect(unittest.TestCase):
   pass

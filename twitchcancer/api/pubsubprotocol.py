@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 from autobahn.asyncio.websocket import WebSocketServerProtocol
 
 from twitchcancer.api.pubsubmanager import PubSubManager
+from twitchcancer.api.requesthandler import RequestHandler
 
 # transforms datetime into iso formatted strings
 class DatetimeJSONEncoder(json.JSONEncoder):
@@ -23,6 +24,7 @@ class DatetimeJSONEncoder(json.JSONEncoder):
 
     subscribe: {"subscribe": topic }
     unsubscribe {"unsubscribe": topic }
+    request {"request": topic [, "data": something] }
 
 
   Replies:
@@ -69,6 +71,12 @@ class PubSubProtocol(WebSocketServerProtocol):
     # handle unsubscriptions
     if 'unsubscribe' in s:
       PubSubManager.instance().unsubscribe(self, s['unsubscribe'])
+
+    # handle requests
+    if 'request' in s:
+      response = RequestHandler.instance().handle(s)
+
+      self.send(s['request'], response)
 
   def send(self, topic, data):
     try:

@@ -98,3 +98,11 @@ class Storage(StorageInterface):
       self.storage = WriteOnlyStorage()
 
     self.storage.record()
+
+  # defaults to ReadOnlyStorage
+  def search(self, channel):
+    if not self.storage:
+      from twitchcancer.storage.readonlystorage import ReadOnlyStorage
+      self.storage = ReadOnlyStorage()
+
+    return self.storage.search(channel)

@@ -90,6 +90,16 @@ class TestPubSubProtocolOnMessage(unittest.TestCase):
 
     unsubscribe.assert_called_once_with(p, "topic")
 
+  # check that we response to requests
+  @patch('twitchcancer.api.requesthandler.RequestHandler.handle', return_value="response")
+  @patch('twitchcancer.api.pubsubprotocol.PubSubProtocol.send')
+  def test_request_command(self, send, handle):
+    p = PubSubProtocol()
+    p.onMessage(b'{"request":"topic"}', True)
+
+    handle.assert_called_once_with({"request":"topic"})
+    send.assert_called_once_with("topic", "response")
+
 # PubSubProtocol.send()
 class TestPubSubProtocolSend(unittest.TestCase):
 

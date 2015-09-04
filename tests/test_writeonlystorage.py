@@ -21,6 +21,7 @@ class TestWriteOnlyStorageNotImplemented(unittest.TestCase):
     self.assertRaises(NotImplementedError, lambda: w.channel(None))
     self.assertRaises(NotImplementedError, lambda: w.status())
     self.assertRaises(NotImplementedError, lambda: w.store(None, None))
+    self.assertRaises(NotImplementedError, lambda: w.search(None))
 
 # WriteOnlyStorage.record()
 class TestWriteOnlyStorageRecord(unittest.TestCase):

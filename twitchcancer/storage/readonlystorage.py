@@ -20,6 +20,7 @@ from twitchcancer.storage.storageinterface import StorageInterface
 #  - storage.leaderboards()
 #  - storage.leaderboard()
 #  - storage.status()
+#  - storage.search()
 class ReadOnlyStorage(StorageInterface):
 
   def __init__(self):
@@ -85,6 +86,11 @@ class ReadOnlyStorage(StorageInterface):
 
     return status
 
+  # search for a channel by its name
+  # @db.read()
+  def search(self, channel):
+    return self._store.search(channel)
+
   # create a socket and connect to the cancer server
   # @socket.connect()
   def _connect(self):
@@ -100,3 +106,8 @@ class ReadOnlyStorage(StorageInterface):
     self.socket.setsockopt(zmq.LINGER, 0)
     self.socket.close()
     self.poller.unregister(self.socket)
+
+  # read channel data from the database
+  # @db.read()
+  def channel(self, channel):
+    return self._store.channel(channel)

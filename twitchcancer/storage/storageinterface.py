@@ -33,3 +33,7 @@ class StorageInterface:
   # start persisting message summaries
   def record(self):
     raise NotImplementedError()
+
+  # search for a channel based on part of its name
+  def search(self, root):
+    raise NotImplementedError()

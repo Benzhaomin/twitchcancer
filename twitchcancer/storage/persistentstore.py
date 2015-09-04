@@ -308,3 +308,13 @@ class PersistentStore:
         'cancer': { '$sum': '$total.cancer' }
       }
     }]).next()
+
+  # returns all the channels that look like name
+  # @db.read
+  def search(self, name):
+    if not name:
+      return []
+
+    return [r['_id'] for r in self.db.leaderboard.find({
+      '_id': {"$regex": '.*'+name.lower()+'.*'}
+    })]

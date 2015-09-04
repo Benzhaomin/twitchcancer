@@ -19,6 +19,7 @@ class TestMemoryStorageNotImplemented(unittest.TestCase):
     self.assertRaises(NotImplementedError, lambda: m.leaderboard(None))
     self.assertRaises(NotImplementedError, lambda: m.channel(None))
     self.assertRaises(NotImplementedError, lambda: m.status())
+    self.assertRaises(NotImplementedError, lambda: m.search(None))
 
 # MemoryStorage.cancer()
 class TestMemoryStorageCancer(unittest.TestCase):

@@ -246,3 +246,27 @@ class TestPersistentStoreStatusUsingDB(TestPersistentStoreUsingDB):
     actual = p.status()
 
     self.assertEqual(actual, expected)
+
+# PersistentStore.search()
+class TestPersistentStoreSearch(TestPersistentStoreUsingMock):
+  pass
+
+# PersistentStore.search()
+class TestPersistentStoreSearchUsingDB(TestPersistentStoreUsingDB):
+
+  # check that searching for channels works correctly
+  def test_using_db(self):
+    p = self.get_test_store()
+
+    channel = "foobar"
+    now = datetime.datetime.now().replace(microsecond=0)
+
+    p.update_leaderboard({'date': now, 'channel': channel, 'cancer': 30, 'messages': 40 })
+
+    expected = [channel]
+
+    self.assertEqual(p.search('foo'), expected)
+    self.assertEqual(p.search('Foo'), expected)
+    self.assertEqual(p.search('oo'), expected)
+    self.assertEqual(p.search('barfoo'), [])
+    self.assertEqual(p.search(None), [])
