@@ -31,9 +31,23 @@ class IRCClient(irc.client.SimpleIRCClient):
     irc.client.SimpleIRCClient.__init__(self)
 
     self.connecting = False
-    self.config = config
     self.autojoin = set()
     self.channels = set()
+
+    try:
+      # check the configuration before storing it
+      self.config = {
+        'server': config['server'],
+        'port': config['port'],
+        'username': config['username'],
+        'password': config['password'],
+      }
+    except KeyError:
+      logger.warning('got an invalid configuration: %s', config)
+      raise TypeError('config should have the following keys: server, port, username and password')
+    except TypeError:
+      logger.warning('got a null configuration')
+      raise TypeError('config should be a dict')
 
   def _connect(self):
     if not self.connection.is_connected() and not self.connecting:
