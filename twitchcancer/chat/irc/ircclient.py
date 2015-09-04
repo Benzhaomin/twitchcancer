@@ -87,7 +87,7 @@ class IRCClient(irc.client.SimpleIRCClient):
     self.connection.part(channel)
     logger.info("leaving %s", channel)
 
-    # save the new channel
+    # forget about that channel
     self.channels.remove(channel)
 
   def on_welcome(self, connection, event):
