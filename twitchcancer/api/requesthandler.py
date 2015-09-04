@@ -29,7 +29,7 @@ class RequestHandler:
   def handle(self, request):
     try:
       # search_channel requests
-      if request['topic'] == "twitchcancer.search":
+      if request['request'] == "twitchcancer.search":
         # we need a channel to search for
         if request['data'] is not None:
           return self.storage.search(request['data'])

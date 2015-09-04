@@ -91,5 +91,3 @@ class PubSubProtocol(WebSocketServerProtocol):
       self.sendMessage(payload, False)
     except:
       logger.debug('got a non json topic event: %s', data)
-
-

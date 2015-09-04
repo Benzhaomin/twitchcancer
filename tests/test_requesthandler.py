@@ -37,13 +37,13 @@ class TestRequestHandlerHandle(RequestHandlerTestCase):
 
   # check that we get an empty response to malformed requests
   def test_malformed(self):
-    result = RequestHandler.instance().handle({'topic': 'twitchcancer.search'})
+    result = RequestHandler.instance().handle({'request': 'twitchcancer.search'})
 
     self.assertEqual(result, {})
 
   # check that we transmit calls to real requests
   @patch('twitchcancer.api.requesthandler.Storage.search', return_value=["forsenlol"])
   def test_malformed(self, search):
-    result = RequestHandler.instance().handle({'topic': 'twitchcancer.search', 'data': 'for'})
+    result = RequestHandler.instance().handle({'request': 'twitchcancer.search', 'data': 'for'})
 
     self.assertEqual(result, ["forsenlol"])
