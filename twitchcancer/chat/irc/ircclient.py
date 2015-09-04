@@ -74,8 +74,7 @@ class IRCClient(irc.client.SimpleIRCClient):
   def leave(self, channel):
     # just don't do anything if we're not connected
     if not self.connection.is_connected():
-      logger.debug('%s not connected, reconnect before leaving %s', self, channel)
-      self._connect()
+      logger.debug('%s not connected, no need to leave %s', self, channel)
       return
 
     # make sure the channel exists
