@@ -6,8 +6,17 @@ from unittest.mock import patch, MagicMock
 
 from twitchcancer.api.pubsubtopic import PubSubTopic, PubSubVariableTopic
 
+# clean the singleton before and after ourselves
+class PubSubTopicTestCase(unittest.TestCase):
+
+  def setUp(self):
+    PubSubTopic.instances.clear()
+
+  def tearDown(self):
+    PubSubTopic.instances.clear()
+
 # PubSubTopic.instances
-class TestPubSubTopicInstances(unittest.TestCase):
+class TestPubSubTopicInstances(PubSubTopicTestCase):
 
   # check that PubSubTopic instances are stored in the class
   def test_instances(self):
@@ -24,7 +33,7 @@ class TestPubSubTopicInstances(unittest.TestCase):
     self.assertEqual(len(PubSubTopic.instances), 1)
 
 # PubSubTopic.__init__
-class TestPubSubTopicInit(unittest.TestCase):
+class TestPubSubTopicInit(PubSubTopicTestCase):
 
   # check that init stores values its passed
   def test_init(self):
@@ -36,7 +45,7 @@ class TestPubSubTopicInit(unittest.TestCase):
     self.assertEqual(topic.data, None)
 
 # PubSubTopic.__str__
-class TestPubSubTopicStr(unittest.TestCase):
+class TestPubSubTopicStr(PubSubTopicTestCase):
 
   # check that a PubSubTopic is stringified as its name
   def test_str(self):
@@ -45,7 +54,7 @@ class TestPubSubTopicStr(unittest.TestCase):
     self.assertEqual(str(topic), "foo")
 
 # PubSubTopic.__eq__
-class TestPubSubTopicEq(unittest.TestCase):
+class TestPubSubTopicEq(PubSubTopicTestCase):
 
   # check that equality is based on the name
   def test_eq(self):
@@ -57,7 +66,7 @@ class TestPubSubTopicEq(unittest.TestCase):
     self.assertFalse(foo1 == bar)
 
 # PubSubTopic.__neq__
-class TestPubSubTopicNeq(unittest.TestCase):
+class TestPubSubTopicNeq(PubSubTopicTestCase):
 
   # check that equality is based on the name
   def test_neq(self):
@@ -69,7 +78,7 @@ class TestPubSubTopicNeq(unittest.TestCase):
     self.assertTrue(foo1 != bar)
 
 # PubSubTopic.__hash__
-class TestPubSubTopicHash(unittest.TestCase):
+class TestPubSubTopicHash(PubSubTopicTestCase):
 
   # check that hashing is based on the name
   def test_hash(self):
@@ -78,7 +87,7 @@ class TestPubSubTopicHash(unittest.TestCase):
     self.assertEqual(hash(foo), hash(foo.name))
 
 # PubSubTopic.find
-class TestPubSubTopicFind(unittest.TestCase):
+class TestPubSubTopicFind(PubSubTopicTestCase):
 
   # check that an existing topic is found
   def test_exists(self):
@@ -91,7 +100,7 @@ class TestPubSubTopicFind(unittest.TestCase):
     self.assertEqual(PubSubTopic.find("foobar"), None)
 
 # PubSubTopic.match
-class TestPubSubTopicMatch(unittest.TestCase):
+class TestPubSubTopicMatch(PubSubTopicTestCase):
 
   # check that match compares the name only
   def test_match(self):
@@ -101,7 +110,7 @@ class TestPubSubTopicMatch(unittest.TestCase):
     self.assertFalse(topic.match("bar"))
 
 # PubSubTopic.payload
-class TestPubSubTopicPayload(unittest.TestCase):
+class TestPubSubTopicPayload(PubSubTopicTestCase):
 
   # check that the payload is computed when useCache is false and there's no cached data
   def test_payload_no_cache_no_data(self):
@@ -147,7 +156,7 @@ class TestPubSubTopicPayload(unittest.TestCase):
     self.assertEqual(payload, "cached")
 
 # PubSubVariableTopic.__init__
-class TestPubSubVariableTopicInit(unittest.TestCase):
+class TestPubSubVariableTopicInit(PubSubTopicTestCase):
 
   # check that init stores values its passed
   def test_init_members(self):
@@ -164,7 +173,7 @@ class TestPubSubVariableTopicInit(unittest.TestCase):
       self.assertRaises(NotImplementedError, lambda: PubSubVariableTopic(name=name, callback="bar", sleep="baz"))
 
 # PubSubVariableTopic.match
-class TestPubSubVariableTopicMatch(unittest.TestCase):
+class TestPubSubVariableTopicMatch(PubSubTopicTestCase):
 
   # check that match compares the name only
   def test_match(self):
@@ -182,7 +191,7 @@ class TestPubSubVariableTopicMatch(unittest.TestCase):
     self.assertEqual(topic.argument("arg.foo"), "foo")
 
 # PubSubVariableTopic.payload
-class TestPubSubVariableTopicPayload(unittest.TestCase):
+class TestPubSubVariableTopicPayload(PubSubTopicTestCase):
 
   # check that the payload is computed when useCache is false and there's no cached data
   def test_payload_no_cache_no_data(self):
