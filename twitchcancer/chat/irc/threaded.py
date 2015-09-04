@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from twitchcancer.chat.monitor import Monitor
-from twitchcancer.chat.irc.irc import IRC
+from twitchcancer.chat.irc.irc import IRC, ServerConfigurationError, ServerConnectionError
 
 from twitchcancer.symptom.diagnosis import Diagnosis
 from twitchcancer.storage.storage import Storage
@@ -42,58 +42,71 @@ class ThreadedIRCMonitor(Monitor):
     except KeyboardInterrupt:
       pass
 
-  # connect to a server
-  def connect(self, server):
-    # don't connect to the same server twice
-    if server in self.clients:
-      return
+  # returns a client connected to the given host or None on failures
+  def connect(self, host):
+    try:
+      # don't connect to the same server twice
+      if host in self.clients:
+        return self.clients[host]
 
-    logger.info("connecting to %s", server)
+      # ignore buggy host:port
+      if host is None or ":" not in host:
+        return None
 
-    (ip, port) = server.split(":")
-    client = IRC(ip, port)
+      # create an IRC client and connect to the server right away
+      (ip, port) = host.split(":")
+      client = IRC(ip, port)
+      client.connect()
+      logger.info("connecting to %s", host)
 
-    self.clients[server] = client
+      # store the IRC client to tell it to join and leave channels later
+      self.clients[host] = client
 
-    t = Thread(name="Thread-"+server, target=_monitor_one, kwargs={'source':client, 'diagnosis': self.diagnosis, 'storage':self.storage})
-    t.daemon = True
-    t.start()
-    logger.debug("started monitoring %s in thread %s", server, t.name)
+      # start a background thread to receive messages, analyze them, and store results
+      t = Thread(name="Thread-"+host, target=_monitor_one, kwargs={'source':client, 'diagnosis': self.diagnosis, 'storage':self.storage})
+      t.daemon = True
+      t.start()
 
-  # join a channel
+      logger.debug("started monitoring channels on %s in thread %s", host, t.name)
+
+      return self.clients[host]
+    except ServerConfigurationError as e:
+      logger.warning("Bogus configuration for %s, exception: %s", host, e)
+      return None
+    except ServerConnectionError as e:
+      logger.warning("Failed to connect to %s, exception: %s", host, e)
+      return None
+
+  # joins a channel on one of its servers, does nothing on failure
   def join(self, channel):
     # don't join the same channel twice
     if channel in self.channels:
-      #logger.debug("not re-joining %s", channel)
       return
 
-    # get a random server hosting this channel
-    server = self.find_server(channel)
+    # get a random server:port hosting this channel
+    host = self.find_server(channel)
 
-    # if we didn't get a server for whatever reason just exit here and stay open to retries
-    if not server:
-      return
-
-    # connect to new servers
-    self.connect(server)
+    # get a client connected to that server:port
+    client = self.connect(host)
 
     # join the channel
-    logger.debug("will join %s on %s", channel, server)
-    self.clients[server].join(channel)
+    if client:
+      client.join(channel)
+      logger.debug("will join %s on %s", channel, host)
 
   # leave a channel
   def leave(self, channel):
     # don't leave a channel we didn't join
     if channel not in self.channels:
-      #logger.debug("not leaving un-joined channel %s", channel)
       return
 
-    # tell the client to leave the channel
+    # get the client that joined this channel
     client = self.get_client(channel)
 
+    # tell the client to leave the channel
     if client:
-      logger.debug("will leave channel %s", channel)
       client.leave(channel)
+      logger.debug("will leave channel %s", channel)
     else:
       logger.warning("couldn't find the client connected to %s", channel)
 

@@ -6,61 +6,69 @@ import threading
 import logging
 logger = logging.getLogger(__name__)
 
-from twitchcancer.chat.irc.ircclient import IRCClient
+from twitchcancer.chat.irc.ircclient import IRCClient, IRCConfigurationError, IRCConnectionError
 from twitchcancer.config import Config
 
-# connect to a server, messages come in as time goes
+class ServerConfigurationError(Exception):
+  pass
+
+class ServerConnectionError(Exception):
+  pass
+
+# provides an iterator over messages received on an IRC server (multi-channel)
 class IRC:
 
+  # raises: ServerConfigurationError
   def __init__(self, host, port):
     super().__init__()
 
     self.host = host
-    self.port = port
-    self.name = host
-    self.messages = None
+    self.port = int(port)
 
-  # initialize runtime things when we actually need to
-  def __lazy_init__(self):
     # queue used to hold messages coming from the producer (IRC client) and going into our consumer
     self.messages = queue.Queue()
 
-    # run network communication in a background thread
-    self.client = IRCClient(self._get_irc_config())
+    # thread started on connect only
+    self.client_thread = None
 
-    t = threading.Thread(target=self._client_thread, kwargs={'client': self.client})
-    t.daemon = True
-    t.start()
+    # create an IRCClient for this server
+    try:
+      self.client = IRCClient({
+        'username': Config.get("monitor.chat.username"),
+        'password': Config.get("monitor.chat.password"),
+        'server': self.host,
+        'port': self.port
+      })
+    except IRCConfigurationError:
+      raise ServerConfigurationError("Invalid configuration for {0}:{1}".format(self.host, self.port))
 
-    logger.debug('started a client thread for %s', self.name);
+  # raises: ServerConnectionError
+  def connect(self):
+    try:
+      self.client._connect()
+
+      # run network communication in a background thread
+      self.client_thread = threading.Thread(target=self._client_thread, kwargs={'client': self.client})
+      self.client_thread.daemon = True
+      self.client_thread.start()
+
+      logger.debug('started a client thread for %s', self.host);
+    except IRCConnectionError:
+      raise ServerConnectionError("Failed to connect to {0}:{1}".format(self.host, self.port))
 
   # we are iterable
   def __iter__(self):
     return self
 
-  # return the first unread message in the queue or blocks waiting for one
+  # return the first unread message in the queue or block waiting for one
   def __next__(self):
-    try:
-      return self.messages.get()
-    # raised when messages is None, when __init__ ran but not __lazy_init__
-    except AttributeError:
-      self.__lazy_init__()
-      return self.__next__()
-    except KeyboardInterrupt:
-      raise StopIteration
+    return self.messages.get()
 
-  # returns the config to use for our IRC client
-  def _get_irc_config(self):
-    return {
-      'username': Config.get("monitor.chat.username"),
-      'password': Config.get("monitor.chat.password"),
-      'server': self.host,
-      'port': int(self.port)
-    }
-
+  # transmit the join call to our IRC client
   def join(self, channel):
     self.client.join(channel)
 
+  # transmit the join call to our IRC client
   def leave(self, channel):
     self.client.leave(channel)
 
@@ -71,17 +79,16 @@ class IRC:
   # background thread to handle all IRC communication
   def _client_thread(self, client):
     client.call_on_pubmsg = self._on_pubmsg
-    client._connect()
     client.start()
 
-  # add messages we received to the queue
-  # called from the client thread
+  # put messages we received in the queue
   def _on_pubmsg(self, channel, message):
     message = message.strip()
+
     if len(message) > 0:
       self.messages.put((channel, message))
     else:
-      logger.warning("empty message: %s", message)
+      logger.warning("empty message in %s", channel)
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')

@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 
 from twitchcancer.chat.irc.threaded import ThreadedIRCMonitor
+from twitchcancer.chat.irc.irc import ServerConfigurationError, ServerConnectionError
 
 # ThreadedIRCMonitor.__init__
 class TestChatThreadedInit(unittest.TestCase):
@@ -51,93 +52,110 @@ class TestChatThreadedRun(unittest.TestCase):
 # ThreadedIRCMonitor.connect
 class TestChatThreadedConnect(unittest.TestCase):
 
+  def setUp(self):
+    self.monitor = ThreadedIRCMonitor(1000)
+    self.ip = "127.0.0.1"
+    self.port = "80"
+    self.host = self.ip+":"+self.port
+
   # check that connecting to a new server works correctly
-  @patch('twitchcancer.chat.irc.threaded.IRC')
-  @patch('twitchcancer.chat.irc.threaded.Thread')
-  def test_default(self, thread, irc):
-    ip = "127.0.0.1"
-    port = "80"
-    server = ip+":"+port
+  @patch('twitchcancer.chat.irc.threaded.IRC.__init__', return_value=None)
+  @patch('twitchcancer.chat.irc.threaded.IRC.connect')
+  @patch('twitchcancer.chat.irc.threaded.Thread.start')
+  def test_default(self, start_thread, connect_irc, init_irc):
+    result = self.monitor.connect(self.host)
 
-    t = ThreadedIRCMonitor(1000)
-    t.connect(server)
+    # we should have created an IRC client for that server and connected to it
+    init_irc.assert_called_once_with(self.ip, self.port)
+    connect_irc.assert_called_once_with()
 
-    # we should have created an IRC client for that server
-    irc.assert_called_once_with(ip, port)
+    # we should have started a background thread for that server
+    start_thread.assert_called_once_with()
 
     # we should have stored the new client in our clients list
-    self.assertEqual(len(t.clients.keys()), 1)
+    self.assertEqual(len(self.monitor.clients.keys()), 1)
+
+    # we should get the new server
+    self.assertIsNotNone(result)
 
   # check that connecting twice to the same server does nothing
   @patch('twitchcancer.chat.irc.threaded.IRC')
-  def test_twice_same(self, irc):
-    ip = "127.0.0.1"
-    port = "80"
-    server = ip+":"+port
+  @patch('twitchcancer.chat.irc.threaded.Thread')
+  def test_twice_same(self, thread, irc):
+    client = MagicMock()
+    self.monitor.clients = { self.host: client }
 
-    t = ThreadedIRCMonitor(1000)
-    t.clients = { server: {} }
+    result = self.monitor.connect(self.host)
 
-    t.connect(server)
-
-    # we should not even try to connect to that server
+    # we should not create an IRC client
     self.assertFalse(irc.called)
 
+    # we should not create a background thread
+    self.assertFalse(thread.called)
+
     # we should have stored the first client only
-    self.assertEqual(len(t.clients.keys()), 1)
+    self.assertEqual(len(self.monitor.clients.keys()), 1)
+
+    # we should get the old server
+    self.assertEqual(result, client)
+
+  # check that configuration error are handled
+  @patch('twitchcancer.chat.irc.threaded.IRC.__init__', return_value=None, side_effect=ServerConfigurationError)
+  def test_configuration_error(self, irc):
+    result = self.monitor.connect(self.host)
+
+    self.assertIsNone(result)
+
+  # check that configuration error are handled
+  @patch('twitchcancer.chat.irc.threaded.IRC.connect', side_effect=ServerConnectionError)
+  def test_connection_error(self, irc):
+    result = self.monitor.connect(self.host)
+
+    self.assertIsNone(result)
 
 # ThreadedIRCMonitor.join
 class TestChatThreadedJoin(unittest.TestCase):
 
-  # check that find_server failures are handled
+  def setUp(self):
+    self.monitor = ThreadedIRCMonitor(1000)
+    self.channel = 'channel'
+
+  # check that we ignore channels without host
   @patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.find_server', return_value=None)
-  @patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.connect')
-  def test_no_server(self, connect, find_server):
-    t = ThreadedIRCMonitor(1000)
-    channel = 'channel'
+  @patch('twitchcancer.chat.irc.irc.IRC.join')
+  def test_no_server(self, ircjoin, find_server):
+    self.monitor.join(self.channel)
 
-    t.join(channel)
-
-    # we shouldn't do anything for channels without server
-    self.assertTrue(find_server.called)
-    self.assertFalse(connect.called)
+    # we shouldn't have exploded
+    self.assertNotIn(self.channel, self.monitor.channels)
 
   # check that joining a new channel works correctly
-  @patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.find_server', return_value="client")
-  @patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.connect')
-  def test_default(self, connect, find_server):
-    t = ThreadedIRCMonitor(1000)
-    channel = 'channel'
+  @patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.find_server', return_value="host")
+  def test_default(self, find_server):
     client = MagicMock()
-    client.channels = []
-    t.clients = { 'client': client }
 
-    t.join(channel)
+    with patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.connect', return_value=client) as connect:
+      self.monitor.join(self.channel)
 
-    # we should have searched for a suitable server
-    find_server.assert_called_once_with(channel)
+      # we should connect to that server
+      connect.assert_called_once_with("host")
 
-    # we should connect to that server
-    connect.assert_called_once_with("client")
-
-    # we should have transmitted the join call to the IRC client
-    client.join.assert_called_once_with(channel)
+      # we should have transmitted the join call to the IRC client
+      client.join.assert_called_once_with(self.channel)
 
   # check that joining the same channel twice does nothing
   @patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.find_server', return_value="client")
   @patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.connect')
   def test_twice(self, connect, find_server):
-    t = ThreadedIRCMonitor(1000)
-    channel = 'channel'
     client = MagicMock()
-    client.channels = [channel]
-    t.clients = { 'client': client }
+    client.channels = [self.channel]
+    clients = { 'client': client }
+    self.monitor.clients = clients
 
-    t.join(channel)
+    self.monitor.join(self.channel)
 
     # we shouldn't do anything on duplicate channels
-    self.assertFalse(find_server.called)
-    self.assertFalse(connect.called)
+    self.assertEqual(self.monitor.clients, clients)
     self.assertFalse(client.join.called)
 
 # ThreadedIRCMonitor.leave
@@ -234,14 +252,20 @@ class TestChatThreadedAutojoin(unittest.TestCase):
     self.monitor = ThreadedIRCMonitor(1000)
 
   # check that a None response is handled correctly
+  @patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.leave')
   @patch('twitchcancer.utils.twitchapi.TwitchApi.stream_list', return_value=None)
-  def test_no_response(self, stream_list):
+  def test_no_response(self, stream_list, leave):
     self.monitor.autojoin()
 
+    self.assertFalse(leave.called)
+
   # check that an empty response is handled correctly
+  @patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.leave')
   @patch('twitchcancer.utils.twitchapi.TwitchApi.stream_list', return_value={})
-  def test_empty_json_response(self, stream_list):
+  def test_empty_json_response(self, stream_list, leave):
     self.monitor.autojoin()
+
+    self.assertFalse(leave.called)
 
   # check that an empty stream list is ignored
   @patch('twitchcancer.chat.irc.threaded.ThreadedIRCMonitor.leave')
