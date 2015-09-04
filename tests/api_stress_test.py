@@ -16,6 +16,7 @@ class APIClientProtocol(WebSocketClientProtocol):
 
     self.sendMessage('{"subscribe": "twitchcancer.live"}'.encode())
     self.sendMessage('{"subscribe": "twitchcancer.leaderboards"}'.encode())
+    self.sendMessage('{"subscribe": "twitchcancer.leaderboard.cancer.minute"}'.encode())
     self.sendMessage('{"subscribe": "twitchcancer.status"}'.encode())
     self.sendMessage('{"subscribe": "twitchcancer.channel.forsenlol"}'.encode())
 

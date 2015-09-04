@@ -63,6 +63,21 @@ class TestReadOnlyStorageLeaderboards(unittest.TestCase):
     self.assertEqual(result, "data")
     self.assertEqual(r._store.leaderboards.call_count, 1)
 
+# ReadOnlyStorage.leaderboard()
+class TestReadOnlyStorageLeaderboard(unittest.TestCase):
+
+  # check that we transmit the call to a store
+  @patch('twitchcancer.storage.readonlystorage.ReadOnlyStorage.__init__', return_value=None)
+  def test_default(self, init):
+    r = ReadOnlyStorage()
+    r._store = MagicMock()
+    r._store.leaderboard = MagicMock(return_value="data")
+
+    result = r.leaderboard("foo")
+
+    self.assertEqual(result, "data")
+    self.assertEqual(r._store.leaderboard.call_count, 1)
+
 # ReadOnlyStorage.channel()
 class TestReadOnlyStorageChannel(unittest.TestCase):
 

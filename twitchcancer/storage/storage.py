@@ -58,6 +58,14 @@ class Storage(StorageInterface):
     return self.storage.leaderboards()
 
   # defaults to ReadOnlyStorage
+  def leaderboard(self, name):
+    if not self.storage:
+      from twitchcancer.storage.readonlystorage import ReadOnlyStorage
+      self.storage = ReadOnlyStorage()
+
+    return self.storage.leaderboard(name)
+
+  # defaults to ReadOnlyStorage
   def channel(self, channel):
     if not self.storage:
       from twitchcancer.storage.readonlystorage import ReadOnlyStorage

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import collections
 import logging
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,17 @@ from twitchcancer.config import Config
 '''
 # use MongoDB straight up
 class PersistentStore:
+
+  _leaderboards = [
+    'cancer.minute',
+    'cancer.total',
+    'cancer.average',
+    'messages.minute',
+    'messages.total',
+    'messages.average',
+    'cpm.minute',
+    'cpm.total'
+  ]
 
   def __init__(self):
     super().__init__()
@@ -157,27 +169,31 @@ class PersistentStore:
 
   # returns all leaderboards
   def leaderboards(self):
-    metrics = ['cancer', 'messages', 'cpm']
-    intervals = ['minute', 'average', 'total']
+    result = collections.defaultdict(lambda:{})
 
-    result = {}
+    for name in self._leaderboards:
+      (metric, interval) = name.split(".")
 
-    for metric in metrics:
-      result[metric] = {}
-
-      for interval in intervals:
-        result[metric][interval] = self.leaderboard(metric, interval)
+      result[metric][interval] = self._get_leaderboard(metric, interval)
 
     return result
 
+  # returns one of the full leaderboards
+  def leaderboard(self, name):
+    if name not in self._leaderboards:
+      return []
+
+    (metric, interval) = name.split(".")
+
+    return self._get_leaderboard(metric, interval, 100)
+
   # returns one of the leaderboards
   # @db.read
-  def leaderboard(self, what, per):
-
+  def _get_leaderboard(self, what, per, limit=10):
     if per == 'minute':
       # sort the leaderboard by interval and field
       sort = [("{0}.{1}.{2}".format(per, what, 'value'), pymongo.DESCENDING)]
-      result = self.db.leaderboard.find().sort(sort).limit(10)
+      result = self.db.leaderboard.find().sort(sort).limit(limit)
 
       return [{
         'channel': r["_id"],
@@ -188,7 +204,7 @@ class PersistentStore:
     elif per == 'total':
       # sort the leaderboard by interval and field
       sort = [("{0}.{1}".format(per, what), pymongo.DESCENDING)]
-      result = self.db.leaderboard.find().sort(sort).limit(10)
+      result = self.db.leaderboard.find().sort(sort).limit(limit)
 
       return [{
         'channel': r["_id"],
@@ -199,7 +215,7 @@ class PersistentStore:
     elif per == 'average':
       # sort the leaderboard by interval and field
       sort = [("{0}.{1}".format(per, what), pymongo.DESCENDING)]
-      result = self.db.leaderboard.find().sort(sort).limit(10)
+      result = self.db.leaderboard.find().sort(sort).limit(limit)
 
       return [{
         'channel': r["_id"],

@@ -38,6 +38,14 @@ class TestPersistentStoreUsingDB(unittest.TestCase):
 
     return store
 
+# sets up a mock database
+class TestPersistentStoreUsingMock(unittest.TestCase):
+
+  @patch('twitchcancer.storage.persistentstore.PersistentStore.__init__', return_value=None)
+  def setUp(self, init):
+    self.store = PersistentStore()
+    self.store.db = MagicMock()
+
 # PersistentStore.__init__()
 class TestPersistentStoreInit(unittest.TestCase):
   pass
@@ -55,18 +63,60 @@ class TestPersistentStoreHistoryToLeaderboard(unittest.TestCase):
   pass
 
 # PersistentStore.leaderboards()
-class TestPersistentStoreLeaderboards(unittest.TestCase):
-  pass
+class TestPersistentStoreLeaderboards(TestPersistentStoreUsingMock):
+
+  # check that we get a summary of all the leaderboards
+  @patch('twitchcancer.storage.persistentstore.PersistentStore._get_leaderboard', return_value=[])
+  def test_all_leaderboards(self, get_leaderboard):
+    result = self.store.leaderboards()
+
+    expected = {
+      'cancer': {
+        'minute':   [],
+        'average':  [],
+        'total':    [],
+      },
+      'messages': {
+        'minute':   [],
+        'average':  [],
+        'total':    [],
+      },
+      'cpm': {
+        'minute':   [],
+        'total':    [],
+      }
+    }
+
+    self.assertEqual(result, expected)
+    self.assertEqual(get_leaderboard.call_count, len(PersistentStore._leaderboards))
 
 # PersistentStore.leaderboard()
-class TestPersistentStoreLeaderboard(unittest.TestCase):
+class TestPersistentStoreLeaderboard(TestPersistentStoreUsingMock):
+
+  # check that an unknown leaderboard is empty
+  @patch('twitchcancer.storage.persistentstore.PersistentStore._get_leaderboard')
+  def test_unknown_leaderboard(self, get_leaderboard):
+    result = self.store.leaderboard("foo")
+
+    self.assertEqual(result, [])
+    self.assertFalse(get_leaderboard.called)
+
+  # check that an known leaderboard is correctly requested from _get_leaderboard
+  @patch('twitchcancer.storage.persistentstore.PersistentStore._get_leaderboard', return_value="foo")
+  def test_known_leaderboard(self, get_leaderboard):
+    result = self.store.leaderboard(PersistentStore._leaderboards[0])
+
+    self.assertEqual(result, "foo")
+
+# PersistentStore._get_leaderboard()
+class TestPersistentStoreGetLeaderboard(unittest.TestCase):
   pass
 
 # PersistentStore.update_leaderboard()
 # PersistentStore._build_leaderboard_update_query()
 # PersistentStore._history_to_leaderboard()
 # PersistentStore.leaderboards()
-# PersistentStore.leaderboard()
+# PersistentStore._get_leaderboard()
 class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
 
   # check that adding and querying for leaderboards works correctly
@@ -93,7 +143,6 @@ class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
       },
       'cpm': {
         'minute':   [{ 'channel': channel, 'date': now1, 'value': '0.75' }],
-        'average':  [{ 'channel': channel, 'date': now1, 'value': str((0.75+0.1)/2) }],
         'total':    [{ 'channel': channel, 'date': now1, 'value': str(35/90) }],
       }
     }
@@ -111,7 +160,6 @@ class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
     compare(actual, expected, 'messages', 'average')
     compare(actual, expected, 'messages', 'total')
     compare(actual, expected, 'cpm', 'minute')
-    compare(actual, expected, 'cpm', 'average')
     compare(actual, expected, 'cpm', 'total')
 
 # PersistentStore._leaderboard_rank()

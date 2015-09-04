@@ -32,6 +32,20 @@ class TestStorageLeaderboards(unittest.TestCase):
 
     self.assertEqual(s.storage.leaderboards.call_count, 1)
 
+# Storage.leaderboard()
+class TestStorageLeaderboard(unittest.TestCase):
+
+  # check that we transmit calls to a concrete implementation
+  def test_transmit(self):
+    s = Storage()
+    s.storage = MagicMock()
+    s.storage.leaderboard = MagicMock()
+    leaderboard = "foo"
+
+    s.leaderboard(leaderboard)
+
+    s.storage.leaderboard.assert_called_once_with(leaderboard)
+
 # Storage.channel()
 class TestStorageChannel(unittest.TestCase):
 

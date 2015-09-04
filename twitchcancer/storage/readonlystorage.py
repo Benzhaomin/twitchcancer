@@ -17,6 +17,7 @@ from twitchcancer.storage.storageinterface import StorageInterface
 # implements:
 #  - storage.channel()
 #  - storage.cancer()
+#  - storage.leaderboards()
 #  - storage.leaderboard()
 #  - storage.status()
 class ReadOnlyStorage(StorageInterface):
@@ -48,6 +49,11 @@ class ReadOnlyStorage(StorageInterface):
   # @db.read()
   def leaderboards(self):
     return self._store.leaderboards()
+
+  # returns a full leaderboard
+  # @db.read()
+  def leaderboard(self, leaderboard):
+    return self._store.leaderboard(leaderboard)
 
   # read channel data from the database
   # @db.read()

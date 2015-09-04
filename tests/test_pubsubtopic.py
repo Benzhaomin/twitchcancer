@@ -189,6 +189,7 @@ class TestPubSubVariableTopicMatch(PubSubTopicTestCase):
     topic = PubSubVariableTopic("arg.*", None, None)
 
     self.assertEqual(topic.argument("arg.foo"), "foo")
+    self.assertEqual(topic.argument("arg.foo.bar"), "foo.bar")
 
 # PubSubVariableTopic.payload
 class TestPubSubVariableTopicPayload(PubSubTopicTestCase):

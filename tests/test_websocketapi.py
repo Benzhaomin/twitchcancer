@@ -48,13 +48,13 @@ class TestWebSocketApiCreatePublishers(unittest.TestCase):
 
     # akwardly check that we create PubSubTopics
     self.assertEqual(PubSubTopic.call_count, 3)
-    self.assertEqual(PubSubVariableTopic.call_count, 1)
+    self.assertEqual(PubSubVariableTopic.call_count, 2)
 
     # check that we created one publish task for each topic
-    self.assertEqual(publish_noop.call_count, 4)
+    self.assertEqual(publish_noop.call_count, 5)
 
     # check that we put the tasks in the loop
-    self.assertEqual(len(gather.call_args[0]), 4)
+    self.assertEqual(len(gather.call_args[0]), 5)
 
 # websocketapi.run()
 class TestWebSocketApiRun(unittest.TestCase):

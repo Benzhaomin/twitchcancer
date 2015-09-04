@@ -14,6 +14,10 @@ class StorageInterface:
   def leaderboards(self):
     raise NotImplementedError()
 
+  # returns a full leaderboard
+  def leaderboard(self, leaderboard):
+    raise NotImplementedError()
+
   # returns best scores and leaderboard ranks of a channel
   def channel(self, channel):
     raise NotImplementedError()
