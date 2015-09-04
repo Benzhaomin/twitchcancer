@@ -55,8 +55,9 @@ class IRCClient(irc.client.SimpleIRCClient):
         self.connect(self.config['server'], self.config['port'], self.config['username'], self.config['password'])
         self.connecting = True
       except irc.client.ServerConnectionError as x:
-          print(x)
-          sys.exit(1)
+        # stay open to further retries
+        self.connecting = False
+        logger.warning('connecting to %s failed with %s', self, x)
 
   def __str__(self):
     return self.config['server'] + ':' + str(self.config['port'])
