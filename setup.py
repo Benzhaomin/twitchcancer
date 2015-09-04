@@ -63,7 +63,7 @@ print("tests_require", test_requires)
 # setup
 setup(
   name = 'twitchcancer',
-  version = '0.1.5',
+  version = '0.1.6',
   packages = find_packages(exclude=excludes),
   scripts = scripts,
   package_data = package_data,
