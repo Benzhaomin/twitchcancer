@@ -1,6 +1,6 @@
 
 Very High
-- storage layer unit testing (persistent and memory)
+-
 
 High
 - add a live pubsub sub count to twitchcancer.status
