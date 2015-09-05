@@ -1,3 +1,9 @@
+twitchcancer (0.3.0-1) unstable; urgency=low
+
+  * Update to 0.3.0, includes three horizons of leaderboards
+
+ -- Benjamin Maisonnas <ben@wainei.net>  Tue, 06 Sep 2015 01:41:35 +0200
+
 twitchcancer (0.2.0-1) unstable; urgency=low
 
   * Update to 0.2.0, includes a more robust monitor, a leaderboard and a search api
@@ -15,7 +21,6 @@ twitchcancer (0.1.5-1) unstable; urgency=low
   * New upstream release: added logging configuration support
 
  -- Benjamin Maisonnas <ben@wainei.net>  Tue, 01 Sep 2015 19:34:35 +0200
-
 
 twitchcancer (0.1.4-1) unstable; urgency=low
 

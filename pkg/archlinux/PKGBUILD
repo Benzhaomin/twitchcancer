@@ -1,7 +1,7 @@
 # Maintainer: Benjamin Maisonnas <ben@wainei.net>
 
 pkgname=twitchcancer
-pkgver=0.2.0
+pkgver=0.3.0
 pkgrel=1
 pkgdesc="Python suite of tools targeted at diagnosing, monitoring and recording data about chat cancer on Twitch."
 arch=(any)
@@ -27,7 +27,7 @@ source=("https://github.com/Benzhaomin/$pkgname/archive/$pkgver.zip"
         'twitchcancer-expose.service'
         'twitchcancer.yml'
         'twitchcancer.logrotate.d')
-sha256sums=('e14ce8de08a198bcc838bae44738132480355129fe231178c89ab2463e101340'
+sha256sums=('5f0b02a6b48a8f9273c0fc7e9a2dc58e09e5e5834f7c1b60b15e9d533c95b35f'
             'fb4fdb25d8485f5e74efb592f5f303a5dbbf045673b9c86b264154a4007796a3'
             '67b1fc9a85466903419f38c66f7ee65398662ff0bff1c47b49f9fc80fde7b219'
             '53f9082c8b125bd0004aa137be5c3df5d8f788f0368e429e5a863aa53ed799af'
