@@ -22,6 +22,11 @@ class TimeSplitter:
   def last_day(cls):
     return cls.now() - datetime.timedelta(days=1)
 
+  # returns the datetime of the beginning of a day
+  @classmethod
+  def day(cls, datetime):
+    return datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+
   # returns the datetime of one month ago
   @classmethod
   def last_month(cls):

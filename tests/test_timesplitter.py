@@ -37,8 +37,18 @@ class TestTimeSplitterLastDay(DeltaComparisonTest):
     self.assertSecondsAgo(TimeSplitter.last_day(), 60*60*24)
 
 # TimeSplitter.last_month()
-class TestTimeSplittertLastMonth(DeltaComparisonTest):
+class TestTimeSplitterLastMonth(DeltaComparisonTest):
 
   # check that the last day is around 30 days ago
   def test_default(self):
     self.assertSecondsAgo(TimeSplitter.last_month(), 30*60*60*24)
+
+# TimeSplitter.day()
+class TestTimeSplitterDay(unittest.TestCase):
+
+  # check that a day is rounded down correctly
+  def test_default(self):
+    result = TimeSplitter.day(datetime.datetime(2015, 2, 20, 12, 20, 30))
+    expected = datetime.datetime(2015, 2, 20, 0, 0, 0)
+
+    self.assertEqual(result, expected)
