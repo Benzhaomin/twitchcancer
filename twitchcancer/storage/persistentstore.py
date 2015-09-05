@@ -295,21 +295,21 @@ class PersistentStore:
   # returns the personal records of a particular channel
   # @db.read
   def channel(self, channel):
-    '''
-    result = {
+    return {
+      'channel': channel,
       'all': self._channel(self._collections['all'], channel),
-      'monthly': self._channel(self._collections['monthly'], channel, TimeSplitter.month(TimeSplitter.now())),
-      'daily': self._channel(self._collections['daily'], channel, TimeSplitter.day(TimeSplitter.now())),
+      'monthly': self._channel(self._collections['monthly'], channel, Leaderboard('monthly', None, None).start_date()),
+      'daily': self._channel(self._collections['daily'], channel, Leaderboard('daily', None, None).start_date()),
     }
-    '''
-    result = self._channel(self._collections['all'], channel)
-    result['channel'] = channel
-
-    return result
 
   # returns personnal records of a channel on one of the leaderboards
   def _channel(self, collection, channel, date=None):
-    record = collection.find_one({'channel': channel})
+    query = {'channel': channel}
+
+    if date is not None:
+      query['date'] = {'$gte': date}
+
+    record = collection.find_one(query)
 
     if not record:
       return {}
@@ -352,7 +352,7 @@ class PersistentStore:
           'value':  int(record['average']['duration']) * 60, # minutes to seconds
           'rank': self._leaderboard_rank(collection, 'average.duration', record['average']['duration'], date)
         },
-        'since': date,
+        'since': record['date'],
       },
 
       # average stats

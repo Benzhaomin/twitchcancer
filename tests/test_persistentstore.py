@@ -168,8 +168,8 @@ class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
     p = self.get_test_store()
 
     channel = "channel"
-    now1 = datetime.datetime.now() - datetime.timedelta(days=34)
-    now2 = datetime.datetime.now().replace(hour=1,microsecond=0)
+    now1 = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=34)
+    now2 = datetime.datetime.now(datetime.timezone.utc).replace(hour=1,microsecond=0)
     start_date = now2.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     # not part of this month's leaderboard
@@ -177,6 +177,10 @@ class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
 
     # should be the one and only record
     p.update_leaderboard({'date': now2, 'channel': channel, 'cancer': 5, 'messages': 50 })
+
+    now1 = now1.replace(tzinfo=None)
+    now2 = now2.replace(tzinfo=None)
+    start_date = start_date.replace(tzinfo=None)
 
     expected = {
       'monthly.cancer.minute':   [{ 'channel': channel, 'date': now2, 'value': '5' }],
@@ -211,8 +215,8 @@ class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
     p = self.get_test_store()
 
     channel = "channel"
-    now1 = datetime.datetime.now() - datetime.timedelta(days=1)
-    now2 = datetime.datetime.now().replace(microsecond=0)
+    now1 = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0) - datetime.timedelta(days=1)
+    now2 = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
     start_date = now2.replace(hour=0, minute=0, second=0, microsecond=0)
 
     # not part of this month's leaderboard
@@ -220,6 +224,10 @@ class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
 
     # should be the one and only record
     p.update_leaderboard({'date': now2, 'channel': channel, 'cancer': 5, 'messages': 50 })
+
+    now1 = now1.replace(tzinfo=None)
+    now2 = now2.replace(tzinfo=None)
+    start_date = start_date.replace(tzinfo=None)
 
     expected = {
       'daily.cancer.minute':   [{ 'channel': channel, 'date': now2, 'value': '5' }],
@@ -266,31 +274,76 @@ class TestPersistentStoreChannelUsingDB(TestPersistentStoreUsingDB):
     p = self.get_test_store()
 
     channel = "channel"
-    now1 = datetime.datetime(2015,8,25).replace(microsecond=0)
-    now2 = now1 + datetime.timedelta(days=10)
-    now3 = datetime.datetime.now().replace(hour=0,minute=0)
+    old = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0) - datetime.timedelta(days=31)
+    month = datetime.datetime.now(datetime.timezone.utc).replace(day=1, microsecond=0)
+    today = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
 
-    p.update_leaderboard({'date': now1, 'channel': channel, 'cancer': 30, 'messages': 40 })
-    p.update_leaderboard({'date': now2, 'channel': channel, 'cancer': 5, 'messages': 50 })
+    p.update_leaderboard({'date': old, 'channel': channel, 'cancer': 8, 'messages': 2 })
+    p.update_leaderboard({'date': month, 'channel': channel, 'cancer': 4, 'messages': 4 })
+    p.update_leaderboard({'date': today, 'channel': channel, 'cancer': 2, 'messages': 8 })
+
+    old = old.replace(tzinfo=None)
+    month = month.replace(tzinfo=None)
+    today = today.replace(tzinfo=None)
 
     expected = {
       'channel': channel,
-      'minute': {
-        'cancer':     { 'value': 30, 'date': now1, 'rank': 1 },
-        'messages':   { 'value': 50, 'date': now2, 'rank': 1 },
-        'cpm':        { 'value': 0.75, 'date': now1, 'rank': 1 },
+      'all': {
+        'minute': {
+          'cancer':     { 'value': 8, 'date': old, 'rank': 1 },
+          'messages':   { 'value': 8, 'date': today, 'rank': 1 },
+          'cpm':        { 'value': 8/2, 'date': old, 'rank': 1 },
+        },
+        'total': {
+          'cancer':     { 'value': 14, 'rank': 1 },
+          'messages':   { 'value': 14, 'rank': 1 },
+          'cpm':        { 'value': 1.0, 'rank': 1 },
+          'duration':   { 'value': 3*60, 'rank': 1 },
+          'since':      old
+        },
+        'average': {
+          'cancer':     { 'value': 14/3, 'rank': 1 },
+          'messages':   { 'value': 14/3, 'rank': 1 },
+          'cpm':        { 'value': (8/2+4/4+2/8)/3, 'rank': 1 }
+        }
       },
-      'total': {
-        'cancer':     { 'value': 35, 'rank': 1 },
-        'messages':   { 'value': 90, 'rank': 1 },
-        'cpm':        { 'value': 35/90, 'rank': 1 },
-        'duration':   { 'value': 2, 'rank': 1 },
-        'since':      now1
+      'monthly': {
+        'minute': {
+          'cancer':     { 'value': 4, 'date': month, 'rank': 1 },
+          'messages':   { 'value': 8, 'date': today, 'rank': 1 },
+          'cpm':        { 'value': 1.0, 'date': month, 'rank': 1 },
+        },
+        'total': {
+          'cancer':     { 'value': 6, 'rank': 1 },
+          'messages':   { 'value': 12, 'rank': 1 },
+          'cpm':        { 'value': 6/12, 'rank': 1 },
+          'duration':   { 'value': 2*60, 'rank': 1 },
+          'since':      month.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        },
+        'average': {
+          'cancer':     { 'value': 6/2, 'rank': 1 },
+          'messages':   { 'value': 12/2, 'rank': 1 },
+          'cpm':        { 'value': (1+2/8)/2, 'rank': 1 }
+        }
       },
-      'average': {
-        'cancer':     { 'value': 17.5, 'rank': 1 },
-        'messages':   { 'value': 45.0, 'rank': 1 },
-        'cpm':        { 'value': (0.75+0.1)/2, 'rank': 1 }
+      'daily': {
+        'minute': {
+          'cancer':     { 'value': 2, 'date': today, 'rank': 1 },
+          'messages':   { 'value': 8, 'date': today, 'rank': 1 },
+          'cpm':        { 'value': 2/8, 'date': today, 'rank': 1 },
+        },
+        'total': {
+          'cancer':     { 'value': 2, 'rank': 1 },
+          'messages':   { 'value': 8, 'rank': 1 },
+          'cpm':        { 'value': 2/8, 'rank': 1 },
+          'duration':   { 'value': 60, 'rank': 1 },
+          'since':      today.replace(hour=0, minute=0, second=0, microsecond=0)
+        },
+        'average': {
+          'cancer':     { 'value': 2, 'rank': 1 },
+          'messages':   { 'value': 8, 'rank': 1 },
+          'cpm':        { 'value': 2/8, 'rank': 1 }
+        }
       }
     }
 
@@ -301,15 +354,15 @@ class TestPersistentStoreChannelUsingDB(TestPersistentStoreUsingDB):
       self.assertEqual(this[key1][key2], that[key1][key2])
 
     self.assertEqual(actual['channel'], expected['channel'])
-    compare(actual, expected, 'minute', 'cancer')
-    compare(actual, expected, 'average', 'cancer')
-    compare(actual, expected, 'total', 'cancer')
-    compare(actual, expected, 'minute', 'messages')
-    compare(actual, expected, 'average', 'messages')
-    compare(actual, expected, 'total', 'messages')
-    compare(actual, expected, 'minute', 'cpm')
-    compare(actual, expected, 'average', 'cpm')
-    compare(actual, expected, 'total', 'cpm')
+    compare(actual, expected, 'all', 'minute')
+    compare(actual, expected, 'all', 'average')
+    compare(actual, expected, 'all', 'total')
+    compare(actual, expected, 'monthly', 'minute')
+    compare(actual, expected, 'monthly', 'average')
+    compare(actual, expected, 'monthly', 'total')
+    compare(actual, expected, 'daily', 'minute')
+    compare(actual, expected, 'daily', 'average')
+    compare(actual, expected, 'daily', 'total')
 
 # PersistentStore.status()
 class TestPersistentStoreStatus(unittest.TestCase):
@@ -323,9 +376,9 @@ class TestPersistentStoreStatusUsingDB(TestPersistentStoreUsingDB):
     p = self.get_test_store()
 
     channel = "channel"
-    old = datetime.datetime.now() - datetime.timedelta(days=31)
-    month = datetime.datetime.now().replace(day=1)
-    today = datetime.datetime.now().replace(microsecond=0)
+    old = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=31)
+    month = datetime.datetime.now(datetime.timezone.utc).replace(day=1)
+    today = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
 
     p.update_leaderboard({'date': old, 'channel': channel, 'cancer': 3, 'messages': 10 })
     p.update_leaderboard({'date': month, 'channel': channel, 'cancer': 5, 'messages': 20 })
@@ -365,7 +418,7 @@ class TestPersistentStoreSearchUsingDB(TestPersistentStoreUsingDB):
     p = self.get_test_store()
 
     channel = "foobar"
-    now = datetime.datetime.now().replace(microsecond=0)
+    now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
 
     p.update_leaderboard({'date': now, 'channel': channel, 'cancer': 30, 'messages': 40 })
 
