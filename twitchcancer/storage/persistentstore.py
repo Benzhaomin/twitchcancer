@@ -11,12 +11,15 @@ from bson.code import Code
 from bson.objectid import ObjectId
 
 from twitchcancer.config import Config
+from twitchcancer.utils.timesplitter import TimeSplitter
+from twitchcancer.storage.leaderboard import Leaderboard, LeaderboardBuilder
 
 '''
   Schema
 
   leaderboard {
-    _id: "#channel",
+    channel: "#channel",
+    date: datetime (creation date),
     minute: {
       cancer: {
         'value': cancer points,
@@ -32,7 +35,6 @@ from twitchcancer.config import Config
       },
     },
     total: {
-      'date': date of the first record,
       'cancer': cancer points,
       'messages': message count,
       'cpm': cancer per message,
@@ -44,20 +46,18 @@ from twitchcancer.config import Config
       'cpm': cancer per message,
     }
   }
+
+  monthly_leaderboard {
+    [see leaderboard]
+  }
+
+  daily_leaderboard {
+    [see leaderboard]
+  }
 '''
+
 # use MongoDB straight up
 class PersistentStore:
-
-  _leaderboards = [
-    'cancer.minute',
-    'cancer.total',
-    'cancer.average',
-    'messages.minute',
-    'messages.total',
-    'messages.average',
-    'cpm.minute',
-    'cpm.total'
-  ]
 
   def __init__(self):
     super().__init__()
@@ -69,26 +69,74 @@ class PersistentStore:
 
     self.db = client[Config.get('record.mongodb.database')]
 
+    # unique index on channel + date
+    #self.db.leaderboard.create_index()
+    #self.db.monthly_leaderboard.create_index()
+    #self.db.daily_leaderboard.create_index()
+
+    # 0.2.0 -> 0.3.0: channel name is in leaderboard.channel instead of leaderboard._id
+    for record in self.db.leaderboard.find({'channel': None}):
+      self.db.leaderboard.update_one(
+        {'_id': record['_id']},
+        { '$set': {'channel': record['_id'] }}
+      )
+
+    # 0.2.0 -> 0.3.0: moved total.date to date
+    for record in self.db.leaderboard.find({'date': None}):
+      self.db.leaderboard.update_one(
+        {'_id': record['_id']},
+        { '$set': {'date': record['total']['date'] }}
+      )
+
+    # ease access to parallel collections
+    self._collections = {
+      'all': self.db.leaderboard,
+      'monthly': self.db.monthly_leaderboard,
+      'daily': self.db.daily_leaderboard,
+    }
+
     logger.info('using mongodb://%s:%s/%s', Config.get('record.mongodb.host'), Config.get('record.mongodb.port'), self.db.name)
 
-  # update db.leaderboard with this minute+channel record
-  # @db.write
+  # update leaderboards with the new minute summary of a channel
   def update_leaderboard(self, summary):
     new = self._history_to_leaderboard(summary)
-    find_query = {'_id': new['_id']}
 
-    record = self.db.leaderboard.find_one(find_query)
+    # update the all-time leaderboard
+    self._update_leaderboard('all', new)
+
+    # update the monthly leaderboard
+    new['date'] = TimeSplitter.month(summary['date'])
+    self._update_leaderboard('monthly', new)
+
+    # update the daily leaderboard
+    new['date'] = TimeSplitter.day(summary['date'])
+    self._update_leaderboard('daily', new)
+
+  # update a leaderboard collection with the new record
+  # @collection
+  # @db.write
+  def _update_leaderboard(self, name, new):
+    collection = self._collections[name]
+
+    find_query = {'channel': new['channel']}
+
+    # the all-time leaderboard doesn't care about dates
+    if name != 'all':
+      find_query['date'] = new['date']
+
+    # search for an existing leaderboard for that channel
+    record = collection.find_one(find_query)
 
     # just insert new records
     if not record:
-      logger.debug('inserting new leaderboard record for %s', new['_id'])
-      self.db.leaderboard.insert_one(new)
+      collection.insert_one(new)
+      logger.debug('inserted a new leaderboard record for %s', new['channel'])
 
     # compute update to existing records (new best score, totals, etc)
     else:
-      logger.debug('updating %s leaderboard with summary %s', new['_id'], summary['date'])
       update_query = self._build_leaderboard_update_query(record, new)
-      self.db.leaderboard.update(find_query, update_query)
+      collection.update_one(find_query, update_query)
+      logger.debug('updating %s leaderboard with summary %s', new['channel'], new['date'])
 
   # prepare a mongo update query for a leaderboard document
   def _build_leaderboard_update_query(self, record, new):
@@ -138,7 +186,8 @@ class PersistentStore:
     (date, channel, cancer, messages) = (summary['date'], summary['channel'], summary['cancer'], summary['messages'])
 
     return {
-      '_id': channel,
+      'channel': channel,
+      'date': date,
       'minute': {
         'cancer': {
           'value': cancer,
@@ -154,7 +203,6 @@ class PersistentStore:
         },
       },
       'total': {
-        'date': date,
         'cancer': cancer,
         'messages': messages,
         'cpm': cancer / messages,
@@ -168,94 +216,121 @@ class PersistentStore:
     }
 
   # returns all leaderboards
-  def leaderboards(self):
+  def leaderboards(self, horizon="all"):
     result = collections.defaultdict(lambda:{})
 
-    for name in self._leaderboards:
-      (metric, interval) = name.split(".")
-
-      result[metric][interval] = self._get_leaderboard(metric, interval)
+    # retrieve each leaderboard for this horizon
+    for leaderboard in LeaderboardBuilder.build(horizon=horizon):
+      result[str(leaderboard)] = self._get_leaderboard(leaderboard)
 
     return result
 
   # returns one of the full leaderboards
   def leaderboard(self, name):
-    if name not in self._leaderboards:
+    leaderboard = LeaderboardBuilder.from_name(name)
+
+    if not leaderboard:
       return []
 
-    (metric, interval) = name.split(".")
-
-    return self._get_leaderboard(metric, interval, 100)
+    return self._get_leaderboard(leaderboard, 100)
 
   # returns one of the leaderboards
   # @db.read
-  def _get_leaderboard(self, what, per, limit=10):
-    if per == 'minute':
+  def _get_leaderboard(self, leaderboard, limit=10):
+    collection = self._collections[leaderboard.horizon]
+
+    # only look at records since the beginning of the leaderboard
+    date = leaderboard.start_date()
+
+    if date:
+      query = { 'date': {'$gte': date }}
+    else:
+      query = {}
+
+    if leaderboard.interval == 'minute':
       # sort the leaderboard by interval and field
-      sort = [("{0}.{1}.{2}".format(per, what, 'value'), pymongo.DESCENDING)]
-      result = self.db.leaderboard.find().sort(sort).limit(limit)
+      sort = [("{0}.{1}.{2}".format(leaderboard.interval, leaderboard.metric, 'value'), pymongo.DESCENDING)]
+      result = collection.find(query).sort(sort).limit(limit)
 
       return [{
-        'channel': r["_id"],
-        'date': r["minute"][what]["date"],
-        'value': str(r["minute"][what]["value"]),
+        'channel': r["channel"],
+        'date': r["minute"][leaderboard.metric]["date"],
+        'value': str(r["minute"][leaderboard.metric]["value"]),
       } for r in result]
 
-    elif per == 'total':
+    elif leaderboard.interval == 'total':
       # sort the leaderboard by interval and field
-      sort = [("{0}.{1}".format(per, what), pymongo.DESCENDING)]
-      result = self.db.leaderboard.find().sort(sort).limit(limit)
+      sort = [("{0}.{1}".format(leaderboard.interval, leaderboard.metric), pymongo.DESCENDING)]
+      result = collection.find(query).sort(sort).limit(limit)
 
       return [{
-        'channel': r["_id"],
-        'date': r["total"]["date"],
-        'value': str(r["total"][what]),
+        'channel': r["channel"],
+        'date': r["date"],
+        'value': str(r["total"][leaderboard.metric]),
       } for r in result]
 
-    elif per == 'average':
+    elif leaderboard.interval == 'average':
       # sort the leaderboard by interval and field
-      sort = [("{0}.{1}".format(per, what), pymongo.DESCENDING)]
-      result = self.db.leaderboard.find().sort(sort).limit(limit)
+      sort = [("{0}.{1}".format(leaderboard.interval, leaderboard.metric), pymongo.DESCENDING)]
+      result = collection.find(query).sort(sort).limit(limit)
 
       return [{
-        'channel': r["_id"],
-        'date': r["total"]["date"],
-        'value': str(r["average"][what]),
+        'channel': r["channel"],
+        'date': r["date"],
+        'value': str(r["average"][leaderboard.metric]),
       } for r in result]
 
   # returns the rank of the value of a field
   # eg. minute.cancer = 1200 => rank = 3
   # @db.read
-  def _leaderboard_rank(self, field, value):
-    return self.db.leaderboard.find({field: {'$gte': value}}).count()
+  # @collection
+  def _leaderboard_rank(self, collection, field, value, date):
+    query = {field: {'$gte': value}}
+
+    if date is not None:
+      query['date'] = {'$gte': date}
+
+    return collection.find(query).count()
 
   # returns the personal records of a particular channel
   # @db.read
   def channel(self, channel):
-    record = self.db.leaderboard.find_one({'_id': channel})
+    '''
+    result = {
+      'all': self._channel(self._collections['all'], channel),
+      'monthly': self._channel(self._collections['monthly'], channel, TimeSplitter.month(TimeSplitter.now())),
+      'daily': self._channel(self._collections['daily'], channel, TimeSplitter.day(TimeSplitter.now())),
+    }
+    '''
+    result = self._channel(self._collections['all'], channel)
+    result['channel'] = channel
+
+    return result
+
+  # returns personnal records of a channel on one of the leaderboards
+  def _channel(self, collection, channel, date=None):
+    record = collection.find_one({'channel': channel})
 
     if not record:
       return {}
 
     return {
-      'channel': record['_id'],
-
       # best minute stats
       'minute': {
         'cancer': {
           'value':  record['minute']['cancer']['value'],
           'date':  record['minute']['cancer']['date'],
-          'rank': self._leaderboard_rank('minute.cancer.value', record['minute']['cancer']['value'])
+          'rank': self._leaderboard_rank(collection, 'minute.cancer.value', record['minute']['cancer']['value'], date)
         },
         'messages': {
           'value':  record['minute']['messages']['value'],
           'date':  record['minute']['messages']['date'],
-          'rank': self._leaderboard_rank('minute.messages.value', record['minute']['messages']['value'])
+          'rank': self._leaderboard_rank(collection, 'minute.messages.value', record['minute']['messages']['value'], date)
         },
         'cpm': {
           'value':  record['minute']['cpm']['value'],
           'date':  record['minute']['cpm']['date'],
-          'rank': self._leaderboard_rank('minute.cpm.value', record['minute']['cpm']['value'])
+          'rank': self._leaderboard_rank(collection, 'minute.cpm.value', record['minute']['cpm']['value'], date)
         },
       },
 
@@ -263,51 +338,73 @@ class PersistentStore:
       'total': {
         'cancer': {
           'value':  record['total']['cancer'],
-          'rank': self._leaderboard_rank('total.cancer', record['total']['cancer'])
+          'rank': self._leaderboard_rank(collection, 'total.cancer', record['total']['cancer'], date)
         },
         'messages': {
           'value':  record['total']['messages'],
-          'rank': self._leaderboard_rank('total.messages', record['total']['messages'])
+          'rank': self._leaderboard_rank(collection, 'total.messages', record['total']['messages'], date)
         },
         'cpm': {
           'value':  record['total']['cpm'],
-          'rank': self._leaderboard_rank('total.cpm', record['total']['cpm'])
+          'rank': self._leaderboard_rank(collection, 'total.cpm', record['total']['cpm'], date)
         },
         'duration': {
           'value':  int(record['average']['duration']) * 60, # minutes to seconds
-          'rank': self._leaderboard_rank('average.duration', record['average']['duration'])
+          'rank': self._leaderboard_rank(collection, 'average.duration', record['average']['duration'], date)
         },
-        'since': record['total']['date'],
+        'since': date,
       },
 
       # average stats
       'average': {
         'cancer': {
           'value':  record['average']['cancer'],
-          'rank': self._leaderboard_rank('average.cancer', record['average']['cancer'])
+          'rank': self._leaderboard_rank(collection, 'average.cancer', record['average']['cancer'], date)
         },
         'messages': {
           'value':  record['average']['messages'],
-          'rank': self._leaderboard_rank('average.messages', record['average']['messages'])
+          'rank': self._leaderboard_rank(collection, 'average.messages', record['average']['messages'], date)
         },
         'cpm': {
           'value':  record['average']['cpm'],
-          'rank': self._leaderboard_rank('average.cpm', record['average']['cpm'])
+          'rank': self._leaderboard_rank(collection, 'average.cpm', record['average']['cpm'], date)
         },
       },
     }
 
   # returns stats about the database
-  # @db.read
   def status(self):
-    return self.db.leaderboard.aggregate([{
+    '''
+    return {
+      'all': self._status(self._collections['all']),
+      'monthly': self._status(self._collections['monthly'], TimeSplitter.month(TimeSplitter.now())),
+      'daily': self._status(self._collections['daily'], TimeSplitter.day(TimeSplitter.now())),
+    }
+    '''
+    return self._status(self._collections['all'])
+
+  # returns the status of a single collection, after a date if set
+  # @db.read
+  def _status(self, collection, date=None):
+    query = []
+
+    if date:
+      query.append({
+        '$match': {
+          'date': { '$gte': date },
+        }
+      })
+
+    query.append({
       '$group': {
         '_id': 'null',
         'channels': { '$sum': 1 },
         'messages': { '$sum': '$total.messages' },
         'cancer': { '$sum': '$total.cancer' }
       }
-    }]).next()
+    })
+
+    return self.db.leaderboard.aggregate(query).next()
 
   # returns all the channels that look like name
   # @db.read
@@ -315,6 +412,6 @@ class PersistentStore:
     if not name:
       return []
 
-    return [r['_id'] for r in self.db.leaderboard.find({
-      '_id': {"$regex": '.*'+name.lower()+'.*'}
+    return [r['channel'] for r in self._collections['all'].find({
+      'channel': {"$regex": '.*'+name.lower()+'.*'}
     })]

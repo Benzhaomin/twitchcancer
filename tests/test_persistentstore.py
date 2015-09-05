@@ -14,27 +14,36 @@ class TestingDatabasePersistentStore(PersistentStore):
   def __init__(self, db):
     self.db = db
 
+    self._collections = {
+      'all': self.db.leaderboard,
+      'monthly': self.db.monthly_leaderboard,
+      'daily': self.db.daily_leaderboard,
+    }
+
 # sets up and tears down a mongodb database to run tests on
 class TestPersistentStoreUsingDB(unittest.TestCase):
 
-  COLLECTION = "twitchcancer_tests"
+  database_name = "twitchcancer_tests"
 
   def setUp(self):
     try:
       self.client = pymongo.MongoClient('mongodb://localhost:27017/', connectTimeoutMS=300, serverSelectionTimeoutMS=300)
       self.client.server_info()
 
-      self.db = self.client[self.COLLECTION]
+      self.db = self.client[self.database_name]
+
     except pymongo.errors.ServerSelectionTimeoutError:
       raise unittest.SkipTest("couldn't connect to a test database at mongodb://localhost:27017/")
 
   def tearDown(self):
     if self.db:
-      self.client.drop_database(self.COLLECTION)
+      self.client.drop_database(self.database_name)
 
   def get_test_store(self):
     store = TestingDatabasePersistentStore(self.db)
-    self.db.leaderboard.drop()
+
+    for collection in store._collections.values():
+      collection.drop()
 
     return store
 
@@ -71,24 +80,20 @@ class TestPersistentStoreLeaderboards(TestPersistentStoreUsingMock):
     result = self.store.leaderboards()
 
     expected = {
-      'cancer': {
-        'minute':   [],
-        'average':  [],
-        'total':    [],
-      },
-      'messages': {
-        'minute':   [],
-        'average':  [],
-        'total':    [],
-      },
-      'cpm': {
-        'minute':   [],
-        'total':    [],
-      }
+      'all.cancer.minute':   [],
+      'all.cancer.average':  [],
+      'all.cancer.total':    [],
+
+      'all.messages.minute':  [],
+      'all.messages.average': [],
+      'all.messages.total':   [],
+
+      'all.cpm.minute': [],
+      'all.cpm.total':  [],
     }
 
     self.assertEqual(result, expected)
-    self.assertEqual(get_leaderboard.call_count, len(PersistentStore._leaderboards))
+    self.assertEqual(get_leaderboard.call_count, 8)
 
 # PersistentStore.leaderboard()
 class TestPersistentStoreLeaderboard(TestPersistentStoreUsingMock):
@@ -104,7 +109,7 @@ class TestPersistentStoreLeaderboard(TestPersistentStoreUsingMock):
   # check that an known leaderboard is correctly requested from _get_leaderboard
   @patch('twitchcancer.storage.persistentstore.PersistentStore._get_leaderboard', return_value="foo")
   def test_known_leaderboard(self, get_leaderboard):
-    result = self.store.leaderboard(PersistentStore._leaderboards[0])
+    result = self.store.leaderboard('all.cancer.total')
 
     self.assertEqual(result, "foo")
 
@@ -119,48 +124,130 @@ class TestPersistentStoreGetLeaderboard(unittest.TestCase):
 # PersistentStore._get_leaderboard()
 class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
 
-  # check that adding and querying for leaderboards works correctly
-  def test_using_db(self):
+  # check that adding and querying for the all leaderboard works correctly
+  def test_all(self):
     p = self.get_test_store()
 
     channel = "channel"
-    now1 = datetime.datetime.now().replace(microsecond=0)
-    now2 = now1 + datetime.timedelta(seconds=60)
+    now1 = datetime.datetime(2015,9,1).replace(microsecond=0)
+    now2 = now1 + datetime.timedelta(days=10)
 
     p.update_leaderboard({'date': now1, 'channel': channel, 'cancer': 30, 'messages': 40 })
     p.update_leaderboard({'date': now2, 'channel': channel, 'cancer': 5, 'messages': 50 })
 
     expected = {
-      'cancer': {
-        'minute':   [{ 'channel': channel, 'date': now1, 'value': '30' }],
-        'average':  [{ 'channel': channel, 'date': now1, 'value': '17.5' }],
-        'total':    [{ 'channel': channel, 'date': now1, 'value': '35' }],
-      },
-      'messages': {
-        'minute':   [{ 'channel': channel, 'date': now2, 'value': '50'}],
-        'average':  [{ 'channel': channel, 'date': now1, 'value': '45.0' }],
-        'total':    [{ 'channel': channel, 'date': now1, 'value': '90' }],
-      },
-      'cpm': {
-        'minute':   [{ 'channel': channel, 'date': now1, 'value': '0.75' }],
-        'total':    [{ 'channel': channel, 'date': now1, 'value': str(35/90) }],
-      }
+      'all.cancer.minute':   [{ 'channel': channel, 'date': now1, 'value': '30' }],
+      'all.cancer.average':  [{ 'channel': channel, 'date': now1, 'value': '17.5' }],
+      'all.cancer.total':    [{ 'channel': channel, 'date': now1, 'value': '35' }],
+
+      'all.messages.minute':  [{ 'channel': channel, 'date': now2, 'value': '50'}],
+      'all.messages.average': [{ 'channel': channel, 'date': now1, 'value': '45.0' }],
+      'all.messages.total':   [{ 'channel': channel, 'date': now1, 'value': '90' }],
+
+      'all.cpm.minute': [{ 'channel': channel, 'date': now1, 'value': '0.75' }],
+      'all.cpm.total':  [{ 'channel': channel, 'date': now1, 'value': str(35/90) }],
     }
 
     actual = p.leaderboards()
 
     # lay all sub-dict out to ease debugging when one fails
-    def compare(this, that, key1, key2):
-      self.assertEqual(this[key1][key2], that[key1][key2])
+    def compare(this, that, key):
+      self.assertEqual(this[key], that[key])
 
-    compare(actual, expected, 'cancer', 'minute')
-    compare(actual, expected, 'cancer', 'average')
-    compare(actual, expected, 'cancer', 'total')
-    compare(actual, expected, 'messages', 'minute')
-    compare(actual, expected, 'messages', 'average')
-    compare(actual, expected, 'messages', 'total')
-    compare(actual, expected, 'cpm', 'minute')
-    compare(actual, expected, 'cpm', 'total')
+    compare(actual, expected, 'all.cancer.minute')
+    compare(actual, expected, 'all.cancer.average')
+    compare(actual, expected, 'all.cancer.total')
+    compare(actual, expected, 'all.messages.minute')
+    compare(actual, expected, 'all.messages.average')
+    compare(actual, expected, 'all.messages.total')
+    compare(actual, expected, 'all.cpm.minute')
+    compare(actual, expected, 'all.cpm.total')
+
+  # check that adding and querying for leaderboards works correctly
+  def test_monthly(self):
+    p = self.get_test_store()
+
+    channel = "channel"
+    now1 = datetime.datetime.now() - datetime.timedelta(days=34)
+    now2 = datetime.datetime.now().replace(hour=1,microsecond=0)
+    start_date = now2.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    # not part of this month's leaderboard
+    p.update_leaderboard({'date': now1, 'channel': channel, 'cancer': 30, 'messages': 40 })
+
+    # should be the one and only record
+    p.update_leaderboard({'date': now2, 'channel': channel, 'cancer': 5, 'messages': 50 })
+
+    expected = {
+      'monthly.cancer.minute':   [{ 'channel': channel, 'date': now2, 'value': '5' }],
+      'monthly.cancer.average':  [{ 'channel': channel, 'date': start_date, 'value': '5' }],
+      'monthly.cancer.total':    [{ 'channel': channel, 'date': start_date, 'value': '5' }],
+
+      'monthly.messages.minute':  [{ 'channel': channel, 'date': now2, 'value': '50'}],
+      'monthly.messages.average': [{ 'channel': channel, 'date': start_date, 'value': '50' }],
+      'monthly.messages.total':   [{ 'channel': channel, 'date': start_date, 'value': '50' }],
+
+      'monthly.cpm.minute': [{ 'channel': channel, 'date': now2, 'value': str(5/50) }],
+      'monthly.cpm.total':  [{ 'channel': channel, 'date': start_date, 'value': str(5/50) }],
+    }
+
+    actual = p.leaderboards("monthly")
+
+    # lay all sub-dict out to ease debugging when one fails
+    def compare(this, that, key):
+      self.assertEqual(this[key], that[key])
+
+    compare(actual, expected, 'monthly.cancer.minute')
+    compare(actual, expected, 'monthly.cancer.average')
+    compare(actual, expected, 'monthly.cancer.total')
+    compare(actual, expected, 'monthly.messages.minute')
+    compare(actual, expected, 'monthly.messages.average')
+    compare(actual, expected, 'monthly.messages.total')
+    compare(actual, expected, 'monthly.cpm.minute')
+    compare(actual, expected, 'monthly.cpm.total')
+
+  # check that adding and querying for leaderboards works correctly
+  def test_daily(self):
+    p = self.get_test_store()
+
+    channel = "channel"
+    now1 = datetime.datetime.now() - datetime.timedelta(days=1)
+    now2 = datetime.datetime.now().replace(microsecond=0)
+    start_date = now2.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # not part of this month's leaderboard
+    p.update_leaderboard({'date': now1, 'channel': channel, 'cancer': 30, 'messages': 40 })
+
+    # should be the one and only record
+    p.update_leaderboard({'date': now2, 'channel': channel, 'cancer': 5, 'messages': 50 })
+
+    expected = {
+      'daily.cancer.minute':   [{ 'channel': channel, 'date': now2, 'value': '5' }],
+      'daily.cancer.average':  [{ 'channel': channel, 'date': start_date, 'value': '5' }],
+      'daily.cancer.total':    [{ 'channel': channel, 'date': start_date, 'value': '5' }],
+
+      'daily.messages.minute':  [{ 'channel': channel, 'date': now2, 'value': '50'}],
+      'daily.messages.average': [{ 'channel': channel, 'date': start_date, 'value': '50' }],
+      'daily.messages.total':   [{ 'channel': channel, 'date': start_date, 'value': '50' }],
+
+      'daily.cpm.minute': [{ 'channel': channel, 'date': now2, 'value': str(5/50) }],
+      'daily.cpm.total':  [{ 'channel': channel, 'date': start_date, 'value': str(5/50) }],
+    }
+
+    actual = p.leaderboards("daily")
+
+    # lay all sub-dict out to ease debugging when one fails
+    def compare(this, that, key):
+      self.assertEqual(this[key], that[key])
+
+    compare(actual, expected, 'daily.cancer.minute')
+    compare(actual, expected, 'daily.cancer.average')
+    compare(actual, expected, 'daily.cancer.total')
+    compare(actual, expected, 'daily.messages.minute')
+    compare(actual, expected, 'daily.messages.average')
+    compare(actual, expected, 'daily.messages.total')
+    compare(actual, expected, 'daily.cpm.minute')
+    compare(actual, expected, 'daily.cpm.total')
 
 # PersistentStore._leaderboard_rank()
 class TestPersistentStoreLeaderboardRank(unittest.TestCase):
@@ -179,15 +266,15 @@ class TestPersistentStoreChannelUsingDB(TestPersistentStoreUsingDB):
     p = self.get_test_store()
 
     channel = "channel"
-    now1 = datetime.datetime.now().replace(microsecond=0)
-    now2 = now1 + datetime.timedelta(seconds=60)
+    now1 = datetime.datetime(2015,8,25).replace(microsecond=0)
+    now2 = now1 + datetime.timedelta(days=10)
+    now3 = datetime.datetime.now().replace(hour=0,minute=0)
 
     p.update_leaderboard({'date': now1, 'channel': channel, 'cancer': 30, 'messages': 40 })
     p.update_leaderboard({'date': now2, 'channel': channel, 'cancer': 5, 'messages': 50 })
 
     expected = {
       'channel': channel,
-
       'minute': {
         'cancer':     { 'value': 30, 'date': now1, 'rank': 1 },
         'messages':   { 'value': 50, 'date': now2, 'rank': 1 },
@@ -242,7 +329,12 @@ class TestPersistentStoreStatusUsingDB(TestPersistentStoreUsingDB):
     p.update_leaderboard({'date': now1, 'channel': channel, 'cancer': 30, 'messages': 40 })
     p.update_leaderboard({'date': now2, 'channel': channel, 'cancer': 5, 'messages': 50 })
 
-    expected = { '_id': 'null', 'channels': 1, 'messages': 90, 'cancer': 35 }
+    expected = {
+      '_id': 'null',
+      'channels': 1,
+      'messages': 90,
+      'cancer': 35
+    }
     actual = p.status()
 
     self.assertEqual(actual, expected)
