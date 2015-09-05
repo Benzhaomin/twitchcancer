@@ -52,3 +52,13 @@ class TestTimeSplitterDay(unittest.TestCase):
     expected = datetime.datetime(2015, 2, 20, 0, 0, 0)
 
     self.assertEqual(result, expected)
+
+# TimeSplitter.month()
+class TestTimeSplitterMonth(unittest.TestCase):
+
+  # check that a day is rounded down correctly
+  def test_default(self):
+    result = TimeSplitter.month(datetime.datetime(2015, 2, 20, 12, 20, 30))
+    expected = datetime.datetime(2015, 2, 1, 0, 0, 0)
+
+    self.assertEqual(result, expected)

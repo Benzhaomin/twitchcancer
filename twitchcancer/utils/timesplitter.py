@@ -31,3 +31,8 @@ class TimeSplitter:
   @classmethod
   def last_month(cls):
     return cls.now() - datetime.timedelta(days=30)
+
+  # returns the datetime of the beginning of a day
+  @classmethod
+  def month(cls, datetime):
+    return datetime.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
