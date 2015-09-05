@@ -323,18 +323,32 @@ class TestPersistentStoreStatusUsingDB(TestPersistentStoreUsingDB):
     p = self.get_test_store()
 
     channel = "channel"
-    now1 = datetime.datetime.now().replace(microsecond=0)
-    now2 = now1 + datetime.timedelta(seconds=60)
+    old = datetime.datetime.now() - datetime.timedelta(days=31)
+    month = datetime.datetime.now().replace(day=1)
+    today = datetime.datetime.now().replace(microsecond=0)
 
-    p.update_leaderboard({'date': now1, 'channel': channel, 'cancer': 30, 'messages': 40 })
-    p.update_leaderboard({'date': now2, 'channel': channel, 'cancer': 5, 'messages': 50 })
+    p.update_leaderboard({'date': old, 'channel': channel, 'cancer': 3, 'messages': 10 })
+    p.update_leaderboard({'date': month, 'channel': channel, 'cancer': 5, 'messages': 20 })
+    p.update_leaderboard({'date': today, 'channel': channel, 'cancer': 10, 'messages': 30 })
 
     expected = {
-      '_id': 'null',
-      'channels': 1,
-      'messages': 90,
-      'cancer': 35
+      'all': {
+        'channels': 1,
+        'messages': 60,
+        'cancer': 18
+      },
+      'monthly': {
+        'channels': 1,
+        'messages': 50,
+        'cancer': 15
+      },
+      'daily': {
+        'channels': 1,
+        'messages': 30,
+        'cancer': 10
+      },
     }
+
     actual = p.status()
 
     self.assertEqual(actual, expected)

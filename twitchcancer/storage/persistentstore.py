@@ -374,14 +374,11 @@ class PersistentStore:
 
   # returns stats about the database
   def status(self):
-    '''
     return {
       'all': self._status(self._collections['all']),
-      'monthly': self._status(self._collections['monthly'], TimeSplitter.month(TimeSplitter.now())),
-      'daily': self._status(self._collections['daily'], TimeSplitter.day(TimeSplitter.now())),
+      'monthly': self._status(self._collections['monthly'], Leaderboard('monthly', None, None).start_date()),
+      'daily': self._status(self._collections['daily'], Leaderboard('daily', None, None).start_date()),
     }
-    '''
-    return self._status(self._collections['all'])
 
   # returns the status of a single collection, after a date if set
   # @db.read
@@ -404,7 +401,14 @@ class PersistentStore:
       }
     })
 
-    return self.db.leaderboard.aggregate(query).next()
+    result = [r for r in collection.aggregate(query)]
+
+    if result:
+      result = result.pop()
+      del result['_id']
+      return result
+    else:
+      return {}
 
   # returns all the channels that look like name
   # @db.read
