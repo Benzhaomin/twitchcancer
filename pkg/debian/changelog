@@ -1,3 +1,9 @@
+twitchcancer (0.2.0-1) unstable; urgency=low
+
+  * Update to 0.2.0, includes a more robust monitor, a leaderboard and a search api
+
+ -- Benjamin Maisonnas <ben@wainei.net>  Tue, 05 Sep 2015 02:10:35 +0200
+
 twitchcancer (0.1.5-2) unstable; urgency=low
 
   * Package update: python3-pymongo must be >= 3.0.0
