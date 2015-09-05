@@ -7,6 +7,8 @@ import logging
 import threading
 logger = logging.getLogger(__name__)
 
+from twitchcancer.utils.timesplitter import TimeSplitter
+
 '''
   Schema
 
@@ -33,7 +35,7 @@ class InMemoryStore:
   # @memory.read()
   def archive(self):
     # debugging
-    now_start = datetime.datetime.now(datetime.timezone.utc)
+    now_start = TimeSplitter.now()
     message_delta = 0
     logger.debug('archive started at %s with %s messages total', now_start, len(self.messages))
 
@@ -79,7 +81,7 @@ class InMemoryStore:
         message_delta += 1
 
     # debugging
-    now_end = datetime.datetime.now(datetime.timezone.utc)
+    now_end = TimeSplitter.now()
     logger.info('archived %s messages in %s ms, %s messages left', message_delta, (now_end - now_start).total_seconds() * 1000, len(self.messages))
 
     return history
@@ -109,7 +111,7 @@ class InMemoryStore:
   # @memory.write()
   def store(self, channel, cancer):
     message = {
-      'date': datetime.datetime.now(datetime.timezone.utc),
+      'date': TimeSplitter.now(),
       'channel': channel,
       'cancer': int(cancer)
     }
@@ -120,4 +122,4 @@ class InMemoryStore:
   # returns the datetime where live and archived messages split
   def _live_message_breakpoint(self):
     # messages are old and ready to be archived after 1 minute
-    return (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=1))
+    return TimeSplitter.last_minute()
