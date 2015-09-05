@@ -77,7 +77,7 @@ class TestLeaderboardStartDate(unittest.TestCase):
     leaderboard = Leaderboard(horizon="monthly", metric="bar", interval="baz")
 
     date = leaderboard.start_date()
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(datetime.timezone.utc)
 
     self.assertEqual(now.month, date.month)
     self.assertEqual(1, date.day)
@@ -89,7 +89,7 @@ class TestLeaderboardStartDate(unittest.TestCase):
     leaderboard = Leaderboard(horizon="daily", metric="bar", interval="baz")
 
     date = leaderboard.start_date()
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(datetime.timezone.utc)
 
     self.assertEqual(now.day, date.day)
     self.assertEqual(0, date.hour)
