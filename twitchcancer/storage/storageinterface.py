@@ -10,8 +10,8 @@ class StorageInterface:
   def cancer(self):
     raise NotImplementedError()
 
-  # returns all the leaderboards
-  def leaderboards(self):
+  # returns all the leaderboards for an horizon
+  def leaderboards(self, horizon):
     raise NotImplementedError()
 
   # returns a full leaderboard

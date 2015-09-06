@@ -48,8 +48,8 @@ class ReadOnlyStorage(StorageInterface):
 
   # read leaderboards from the database
   # @db.read()
-  def leaderboards(self):
-    return self._store.leaderboards()
+  def leaderboards(self, horizon):
+    return self._store.leaderboards(horizon)
 
   # returns a full leaderboard
   # @db.read()

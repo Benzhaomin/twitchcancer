@@ -27,10 +27,11 @@ class TestStorageLeaderboards(unittest.TestCase):
     s = Storage()
     s.storage = MagicMock()
     s.storage.leaderboards = MagicMock()
+    horizon = "foo"
 
-    s.leaderboards()
+    s.leaderboards(horizon)
 
-    self.assertEqual(s.storage.leaderboards.call_count, 1)
+    s.storage.leaderboards.assert_called_once_with(horizon)
 
 # Storage.leaderboard()
 class TestStorageLeaderboard(unittest.TestCase):

@@ -29,7 +29,7 @@ def create_publishers():
   # list of topics clients can subscribe to
   topics = [
     PubSubTopic('twitchcancer.live', storage.cancer, 1),
-    PubSubTopic('twitchcancer.leaderboards', storage.leaderboards, 60),
+    PubSubVariableTopic('twitchcancer.leaderboards.*', storage.leaderboards, 60),
     PubSubVariableTopic('twitchcancer.leaderboard.*', storage.leaderboard, 60),
     PubSubTopic('twitchcancer.status', storage.status, 60),
     PubSubVariableTopic('twitchcancer.channel.*', storage.channel, 60),

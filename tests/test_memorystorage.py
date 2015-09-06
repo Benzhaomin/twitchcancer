@@ -15,7 +15,7 @@ class TestMemoryStorageNotImplemented(unittest.TestCase):
   def test_not_implemented(self, init):
     m = MemoryStorage()
 
-    self.assertRaises(NotImplementedError, lambda: m.leaderboards())
+    self.assertRaises(NotImplementedError, lambda: m.leaderboards(None))
     self.assertRaises(NotImplementedError, lambda: m.leaderboard(None))
     self.assertRaises(NotImplementedError, lambda: m.channel(None))
     self.assertRaises(NotImplementedError, lambda: m.status())

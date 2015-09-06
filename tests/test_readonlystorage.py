@@ -58,10 +58,10 @@ class TestReadOnlyStorageLeaderboards(unittest.TestCase):
     r._store = MagicMock()
     r._store.leaderboards = MagicMock(return_value="data")
 
-    result = r.leaderboards()
+    result = r.leaderboards("foo")
 
     self.assertEqual(result, "data")
-    self.assertEqual(r._store.leaderboards.call_count, 1)
+    r._store.leaderboards.assert_called_once_with("foo")
 
 # ReadOnlyStorage.leaderboard()
 class TestReadOnlyStorageLeaderboard(unittest.TestCase):

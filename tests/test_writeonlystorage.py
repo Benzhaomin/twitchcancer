@@ -17,7 +17,7 @@ class TestWriteOnlyStorageNotImplemented(unittest.TestCase):
 
     self.assertRaises(NotImplementedError, lambda: w.cancer())
     self.assertRaises(NotImplementedError, lambda: w.leaderboard(None))
-    self.assertRaises(NotImplementedError, lambda: w.leaderboards())
+    self.assertRaises(NotImplementedError, lambda: w.leaderboards(None))
     self.assertRaises(NotImplementedError, lambda: w.channel(None))
     self.assertRaises(NotImplementedError, lambda: w.status())
     self.assertRaises(NotImplementedError, lambda: w.store(None, None))
