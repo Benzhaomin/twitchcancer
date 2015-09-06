@@ -113,6 +113,59 @@ class TestPersistentStoreLeaderboard(TestPersistentStoreUsingMock):
 
     self.assertEqual(result, "foo")
 
+
+# PersistentStore.update_leaderboard()
+# PersistentStore._build_leaderboard_update_query()
+# PersistentStore._history_to_leaderboard()
+# PersistentStore.leaderboard()
+# PersistentStore._get_leaderboard()
+class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
+
+  # check that adding and querying for a leaderboard works correctly
+  def test_daily(self):
+    p = self.get_test_store()
+
+    channel = "channel"
+    yesterday = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0) - datetime.timedelta(days=1)
+    today = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+    start_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # not part of today's leaderboard
+    p.update_leaderboard({'date': yesterday, 'channel': channel, 'cancer': 30, 'messages': 40 })
+
+    # should be the one and only record
+    p.update_leaderboard({'date': today, 'channel': channel, 'cancer': 5, 'messages': 50 })
+
+    yesterday = yesterday.replace(tzinfo=None)
+    today = today.replace(tzinfo=None)
+    start_date = start_date.replace(tzinfo=None)
+
+    expected = [{ 'channel': channel, 'date': today, 'value': '5' }]
+
+    actual = p.leaderboard("daily.cancer.minute")
+
+    self.assertEqual(actual, expected)
+
+  # check that older records aren't picked up
+  def test_daily_no_result(self):
+    p = self.get_test_store()
+
+    channel = "channel"
+    yesterday = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0) - datetime.timedelta(days=1)
+    start_date = datetime.datetime.now(datetime.timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # not part of today's leaderboard
+    p.update_leaderboard({'date': yesterday, 'channel': channel, 'cancer': 30, 'messages': 40 })
+
+    yesterday = yesterday.replace(tzinfo=None)
+    start_date = start_date.replace(tzinfo=None)
+
+    expected = []
+
+    actual = p.leaderboard("daily.cancer.minute")
+
+    self.assertEqual(actual, expected)
+
 # PersistentStore._get_leaderboard()
 class TestPersistentStoreGetLeaderboard(unittest.TestCase):
   pass
@@ -122,7 +175,7 @@ class TestPersistentStoreGetLeaderboard(unittest.TestCase):
 # PersistentStore._history_to_leaderboard()
 # PersistentStore.leaderboards()
 # PersistentStore._get_leaderboard()
-class TestPersistentStoreLeaderboardUsingDB(TestPersistentStoreUsingDB):
+class TestPersistentStoreLeaderboardsUsingDB(TestPersistentStoreUsingDB):
 
   # check that adding and querying for the all leaderboard works correctly
   def test_all(self):
