@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import datetime
 import logging
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,13 @@ class PubSubVariableTopic(PubSubTopic):
 
   # return the topic's current data from cache or freshly computed
   def payload(self, useCache=False, **kwargs):
-    if not useCache or self.data is None or kwargs["name"] not in self.data:
-      self.data[kwargs["name"]] = self.callback(self.argument(kwargs["name"]))
 
-    return self.data[kwargs["name"]]
+    if not useCache \
+      or kwargs["name"] not in self.data \
+      or (datetime.datetime.now() - self.data[kwargs["name"]]["date"]).total_seconds() > 60:
+      self.data[kwargs["name"]] = {
+        "data": self.callback(self.argument(kwargs["name"])),
+        "date": datetime.datetime.now()
+      }
+
+    return self.data[kwargs["name"]]["data"]

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import datetime
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -194,6 +195,9 @@ class TestPubSubVariableTopicMatch(PubSubTopicTestCase):
 # PubSubVariableTopic.payload
 class TestPubSubVariableTopicPayload(PubSubTopicTestCase):
 
+  def setUp(self):
+    self.cached_data = {"data": "cached", "date": datetime.datetime.now()}
+
   # check that the payload is computed when useCache is false and there's no cached data
   def test_payload_no_cache_no_data(self):
     callback = MagicMock(return_value="computed")
@@ -211,7 +215,7 @@ class TestPubSubVariableTopicPayload(PubSubTopicTestCase):
     topic = PubSubVariableTopic("no_cache_with_data.*", callback, None)
 
     variable = "no_cache_with_data.foo"
-    topic.data[variable] = "cached"
+    topic.data[variable] = self.cached_data
     payload = topic.payload(False, name=variable)
 
     callback.assert_called_once_with("foo")
@@ -228,14 +232,28 @@ class TestPubSubVariableTopicPayload(PubSubTopicTestCase):
     callback.assert_called_once_with("foo")
     self.assertEqual(payload, "computed")
 
-  # check that the payload is not computed when useCache is true and there is cached data
-  def test_payload_with_cache_with_data(self):
+  # check that the payload is not computed when useCache is true and there is freshly cached data
+  def test_payload_with_cache_with_fresh_data(self):
     callback = MagicMock(return_value="computed")
-    topic = PubSubVariableTopic("with_cache_with_data.*", callback, None)
+    topic = PubSubVariableTopic("with_cache_with_fresh_data.*", callback, None)
 
-    variable = "test_payload_with_cache_with_data.foo"
-    topic.data[variable] = "cached"
+    variable = "with_cache_with_fresh_data.foo"
+    topic.data[variable] = self.cached_data
+
     payload = topic.payload(True, name=variable)
 
     self.assertFalse(callback.called)
     self.assertEqual(payload, "cached")
+
+  # check that the payload is not computed when useCache is true and there is old cached data
+  def test_payload_with_cache_with_old_data(self):
+    callback = MagicMock(return_value="computed")
+    topic = PubSubVariableTopic("with_cache_with_old_data.*", callback, None)
+
+    variable = "with_cache_with_old_data.foo"
+    topic.data[variable] = self.cached_data
+    topic.data[variable]["date"] = datetime.datetime.now() - datetime.timedelta(seconds=62)
+
+    payload = topic.payload(True, name=variable)
+
+    self.assertEqual(payload, "computed")
