@@ -3,6 +3,7 @@ expose:
     websocket:
         host: localhost
         port: 8080
+        pem: "" # pem file to use for SSL or None to disable
 
 # leaderboard persistence
 record:

@@ -3,6 +3,7 @@
 
 import asyncio
 import logging
+import ssl
 logger = logging.getLogger(__name__)
 
 from autobahn.asyncio.websocket import WebSocketServerFactory
@@ -43,12 +44,35 @@ def create_publishers():
 
 # run the websocket server
 def run(args):
-  factory = WebSocketServerFactory()
+  use_ssl = Config.get('expose.websocket.pem') != ""
+
+  # use an ssl prefix if we have a pem file
+  if use_ssl:
+    prefix = "wss"
+  else:
+    prefix = "ws"
+
+  # build the full URL of the web socket end-point
+  url = "{0}://{1}:{2}".format(prefix, Config.get('expose.websocket.host'), Config.get('expose.websocket.port'))
+  logger.info("starting web-socket server at %s", url)
+
+  factory = WebSocketServerFactory(url)
   factory.protocol = PubSubProtocol
 
   # setup the main event loop for network i/o
   loop = asyncio.get_event_loop()
-  coro = loop.create_server(factory, Config.get('expose.websocket.host'), Config.get('expose.websocket.port'))
+
+  # create an ssl context if we need one
+  if use_ssl:
+    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    context.load_cert_chain(Config.get('expose.websocket.pem'))
+    context.check_hostname = False
+    logger.debug("using ssl")
+  else:
+    context = None
+    logger.debug("not using ssl")
+
+  coro = loop.create_server(factory, host=Config.get('expose.websocket.host'), port=Config.get('expose.websocket.port'), ssl=context)
   server = loop.run_until_complete(coro)
 
   # setup publishers coroutines
