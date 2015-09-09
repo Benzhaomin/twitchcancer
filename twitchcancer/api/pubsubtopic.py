@@ -52,9 +52,14 @@ class PubSubTopic:
 
   # return the topic's current data from cache or freshly computed
   def payload(self, useCache=False, **kwargs):
-    if not useCache or self.data is None:
-      self.data = self.callback()
-    return self.data
+    if not useCache \
+      or self.data is None \
+      or (datetime.datetime.now() - self.data["date"]).total_seconds() > 60:
+      self.data = {
+        "data": self.callback(),
+        "date": datetime.datetime.now()
+      }
+    return self.data["data"]
 
 # represents a topic where the last part of the path is variable
 class PubSubVariableTopic(PubSubTopic):

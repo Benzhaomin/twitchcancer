@@ -113,6 +113,9 @@ class TestPubSubTopicMatch(PubSubTopicTestCase):
 # PubSubTopic.payload
 class TestPubSubTopicPayload(PubSubTopicTestCase):
 
+  def setUp(self):
+    self.cached_data = {"data": "cached", "date": datetime.datetime.now()}
+
   # check that the payload is computed when useCache is false and there's no cached data
   def test_payload_no_cache_no_data(self):
     callback = MagicMock(return_value="computed")
@@ -128,7 +131,7 @@ class TestPubSubTopicPayload(PubSubTopicTestCase):
     callback = MagicMock(return_value="computed")
     topic = PubSubTopic("no_cache_with_data", callback, None)
 
-    topic.data = "cached"
+    topic.data = self.cached_data
     payload = topic.payload(False)
 
     callback.assert_called_once_with()
@@ -145,16 +148,28 @@ class TestPubSubTopicPayload(PubSubTopicTestCase):
     callback.assert_called_once_with()
     self.assertEqual(payload, "computed")
 
-  # check that the payload is not computed when useCache is true and there is cached data
-  def test_payload_with_cache_with_data(self):
+  # check that the payload is not computed when useCache is true and there is freshly cached data
+  def test_payload_with_cache_with_fresh_data(self):
     callback = MagicMock(return_value="computed")
-    topic = PubSubTopic("with_cache_with_data", callback, None)
+    topic = PubSubTopic("with_cache_with_fresh_data", callback, None)
 
-    topic.data = "cached"
+    topic.data = self.cached_data
     payload = topic.payload(True)
 
     self.assertFalse(callback.called)
     self.assertEqual(payload, "cached")
+
+  # check that the payload is not computed when useCache is true and there is old cached data
+  def test_payload_with_cache_with_old_data(self):
+    callback = MagicMock(return_value="computed")
+    topic = PubSubTopic("with_cache_with_old_data", callback, None)
+
+    topic.data = self.cached_data
+    topic.data["date"] = datetime.datetime.now() - datetime.timedelta(seconds=62)
+
+    payload = topic.payload(True)
+
+    self.assertEqual(payload, "computed")
 
 # PubSubVariableTopic.__init__
 class TestPubSubVariableTopicInit(PubSubTopicTestCase):
