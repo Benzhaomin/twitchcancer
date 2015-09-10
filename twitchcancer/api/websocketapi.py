@@ -64,9 +64,8 @@ def run(args):
 
   # create an ssl context if we need one
   if use_ssl:
-    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.load_cert_chain(Config.get('expose.websocket.pem'))
-    context.check_hostname = False
     logger.debug("using ssl")
   else:
     context = None
