@@ -3,6 +3,7 @@
 
 import json
 import urllib.request
+from http.client import HTTPException
 
 import logging
 logger = logging.getLogger(__name__)
@@ -39,10 +40,13 @@ class TwitchApi:
 
         return data
     except urllib.error.URLError as e:
-      logger.warning("Twitch API request failed %s", e)
+      logger.warning("Twitch API request failed with URLError %s", e)
       return None
     except urllib.error.HTTPError as e:
-      logger.warning("Twitch API request failed %s", e)
+      logger.warning("Twitch API request failed with HTTPError %s", e)
+      return None
+    except HTTPException as e:
+      logger.warning("Twitch API request failed with HTTPException %s", e)
       return None
     except ValueError as e:
       logger.warning("Twitch API response was not json %s", e)

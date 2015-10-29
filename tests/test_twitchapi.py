@@ -3,6 +3,7 @@
 
 import urllib
 import unittest
+from http.client import HTTPException
 from unittest.mock import patch, Mock, MagicMock
 
 from twitchcancer.utils.twitchapi import TwitchApi
@@ -42,16 +43,23 @@ class TestTwitchApiLoadJson(unittest.TestCase):
 
       self.assertEqual(result, None)
 
-  # check that url errors are handled
-  @patch('twitchcancer.utils.twitchapi.urllib.request.urlopen', side_effect=raise_url_error)
-  def test_url_error(self, urlopen):
+  # check that high-level http exceptions are handled
+  @patch('twitchcancer.utils.twitchapi.urllib.request.urlopen', side_effect=HTTPException)
+  def test_generic_exception(self, urlopen):
     result = TwitchApi._load_json("")
 
     self.assertEqual(result, None)
 
-  # check that http errors are handled
+  # check that url exceptions from urllib are handled
+  @patch('twitchcancer.utils.twitchapi.urllib.request.urlopen', side_effect=raise_url_error)
+  def test_url_exception(self, urlopen):
+    result = TwitchApi._load_json("")
+
+    self.assertEqual(result, None)
+
+  # check that http  exceptions from urllib are handled
   @patch('twitchcancer.utils.twitchapi.urllib.request.urlopen', side_effect=raise_http_error)
-  def test_http_error(self, urlopen):
+  def test_http_exception(self, urlopen):
     result = TwitchApi._load_json("")
 
     self.assertEqual(result, None)
