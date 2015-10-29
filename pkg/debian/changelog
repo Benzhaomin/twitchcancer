@@ -1,20 +1,32 @@
+twitchcancer (0.4.2-1) unstable; urgency=high
+
+  * Update to 0.4.2, the wss:// end-point now only uses secure SSL ciphers
+
+ -- Benjamin Maisonnas <ben@wainei.net>  Thu, 10 Sep 2015 17:10:35 +0200
+
+twitchcancer (0.4.1-1) unstable; urgency=low
+
+  * Update to 0.4.1, added SSL support to the API (wss://)
+
+ -- Benjamin Maisonnas <ben@wainei.net>  Thu, 10 Sep 2015 00:43:35 +0200
+
 twitchcancer (0.4.0-1) unstable; urgency=low
 
   * Update to 0.4.0, includes an api change for leaderboards and a fix to caching
 
- -- Benjamin Maisonnas <ben@wainei.net>  Tue, 07 Sep 2015 06:46:35 +0200
+ -- Benjamin Maisonnas <ben@wainei.net>  Mon, 07 Sep 2015 06:46:35 +0200
 
 twitchcancer (0.3.0-1) unstable; urgency=low
 
   * Update to 0.3.0, includes three horizons of leaderboards
 
- -- Benjamin Maisonnas <ben@wainei.net>  Tue, 06 Sep 2015 01:41:35 +0200
+ -- Benjamin Maisonnas <ben@wainei.net>  Sun, 06 Sep 2015 01:41:35 +0200
 
 twitchcancer (0.2.0-1) unstable; urgency=low
 
   * Update to 0.2.0, includes a more robust monitor, a leaderboard and a search api
 
- -- Benjamin Maisonnas <ben@wainei.net>  Tue, 05 Sep 2015 02:10:35 +0200
+ -- Benjamin Maisonnas <ben@wainei.net>  Sat, 05 Sep 2015 02:10:35 +0200
 
 twitchcancer (0.1.5-2) unstable; urgency=low
 
