@@ -4,5 +4,6 @@ __pycache__/
 *config.yml
 *.egg-info/
 .tox/
+.cache/
 build/
 dist/
