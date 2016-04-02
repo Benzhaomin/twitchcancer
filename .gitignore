@@ -7,3 +7,5 @@ __pycache__/
 .cache/
 build/
 dist/
+pkg/archlinux/src/
+pkg/archlinux/*.zip
