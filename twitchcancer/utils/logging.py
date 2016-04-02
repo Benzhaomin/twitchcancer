@@ -19,7 +19,7 @@ def setup_logger(logger, log_level, config, logfile_name):
 
   if (log_output != "stderr"):
     logfile_path = os.path.join(log_output, logfile_name)
-    handler = logging.handlers.RotatingFileHandler(logfile_path, maxBytes=1*1024*1024, backupCount=5)
+    handler = logging.FileHandler(logfile_path)
   else:
     handler = logging.StreamHandler()
 
