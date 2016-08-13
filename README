@@ -67,6 +67,19 @@ See `twitchcancer-monitor -h`
 
 See `twitchcancer-record -h`
 
+### Maintenance
+
+Daily stats can be deleted unless you want to show browsable daily stats or timelines/graphs with daily data points.
+
+The current front-end doesn't do any of that so a great way to clean-up the db goes like this:
+
+```mongo
+use twitchcancer
+db.daily_leaderboard.find({'date': { "$lt": ISODate("2016-08-01") }}).count()
+db.daily_leaderboard.remove({'date': { "$lt": ISODate("2016-08-01") }})
+db.runCommand ( { compact: 'daily_leaderboard' } )
+```
+
 ## Expose
 
 ### Goal
