@@ -17,13 +17,14 @@ See the [archlinux folder](pkg/archlinux) and the [PKGBUILD](pkg/archlinux/PKGBU
 
 You can use the `-f` or `--config` switch to pass the path of a configuration file overriding any of the [default settings](twitchcancer/config.default.yml).
 
-The monitor module requires a valid Twitch username and an active oauth key, example:
+The monitor module requires a valid Twitch username, an active oauth key and an API Client ID, example:
 
 ```yaml
 monitor:
     chat:
         username: username      # your twitch username
         password: oauth:key     # http://twitchapps.com/tmi/
+        clientid: xxxx          # https://www.twitch.tv/kraken/oauth2/clients/YOURCLIENTID
 ```
 
 You would then run the monitor module with:

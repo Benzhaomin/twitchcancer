@@ -27,6 +27,7 @@ monitor:
     chat:
         username: username      # your twitch username
         password: oauth:key     # http://twitchapps.com/tmi/
+        clientid: xxxx          # https://www.twitch.tv/kraken/oauth2/clients/YOURCLIENTID
 
 # what and where to log
 logging:

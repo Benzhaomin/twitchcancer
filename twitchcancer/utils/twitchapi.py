@@ -8,6 +8,9 @@ from http.client import HTTPException
 import logging
 logger = logging.getLogger(__name__)
 
+from twitchcancer.config import Config
+
+
 class TwitchApi:
 
   @classmethod
@@ -31,11 +34,12 @@ class TwitchApi:
   # returns None on any error
   def _load_json(cls, url):
     try:
-      with urllib.request.urlopen(url) as response:
+      request = urllib.request.Request(url)
+      request.add_header('Client-ID', Config.get('monitor.chat.clientid'))
+
+      with urllib.request.urlopen(request) as response:
         binary = response.read()
-
         string = binary.decode()
-
         data = json.loads(string)
 
         return data

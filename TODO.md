@@ -3,7 +3,8 @@ Very High
 -
 
 High
--
+- Packaging/releasing flow with Buildout
+- CI on GitLab
 
 Normal
 -
