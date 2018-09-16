@@ -1,0 +1,3 @@
+record:
+  mongodb:
+    host: mongo

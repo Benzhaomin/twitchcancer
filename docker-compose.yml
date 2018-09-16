@@ -1,0 +1,10 @@
+version: '3.7'
+services:
+  mongo:
+    image: mongo:4.1
+    volumes:
+    - type: bind
+      source: ./var/data/mongo
+      target: /data/db
+    ports:
+    - "21001:27017"

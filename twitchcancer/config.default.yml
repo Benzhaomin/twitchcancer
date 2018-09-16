@@ -1,35 +1,34 @@
 # web socket API
 expose:
-    websocket:
-        host: localhost
-        port: 8080
-        pem: "" # pem file to use for SSL or None to disable
+  websocket:
+    host: localhost
+    port: 8080
+    pem: "" # pem file to use for SSL or None to disable
 
 # leaderboard persistence
 record:
-    mongodb:
-        host: localhost
-        port: 27017
-        database: twitchcancer
+  mongodb:
+    host: localhost
+    port: 27017
+    database: twitchcancer
 
 # live chat monitoring
 monitor:
+  # inter-module communication
+  socket:
+    # live cancer request/response socket
+    cancer_request: ipc:///tmp/twitchcancer-read-cancer.sock
 
-    # inter-module communication
-    socket:
-        # live cancer request/response socket
-        cancer_request: ipc:///tmp/twitchcancer-read-cancer.sock
+    # live cancer summary publication socket
+    cancer_summary: ipc:///tmp/twitchcancer-pubsub-summary.sock
 
-        # live cancer summary publication socket
-        cancer_summary: ipc:///tmp/twitchcancer-pubsub-summary.sock
-
-    # twitch chat credentials
-    chat:
-        username: username      # your twitch username
-        password: oauth:key     # http://twitchapps.com/tmi/
-        clientid: xxxx          # https://www.twitch.tv/kraken/oauth2/clients/YOURCLIENTID
+  # twitch chat credentials
+  chat:
+    username: username      # your twitch username
+    password: oauth:key     # http://twitchapps.com/tmi/
+    clientid: xxxx          # https://www.twitch.tv/kraken/oauth2/clients/YOURCLIENTID
 
 # what and where to log
 logging:
-    level: WARNING
-    output: "stderr" # or eg. /var/log/twitchcancer
+  level: WARNING
+  output: "stderr" # or eg. /var/log/twitchcancer

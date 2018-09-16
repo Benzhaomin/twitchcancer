@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+autobahn = '*'
+irc = '*'
+pymongo = '*'
+PyYAML = '*'
+pyzmq = '*'
+
+[dev-packages]
+"flake8" = "*"
+"pep8-naming" = "*"
+ipython = "*"
+docker-compose = "*"
