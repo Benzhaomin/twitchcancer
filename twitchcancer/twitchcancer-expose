@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
+import logging
+
+from twitchcancer.config import Config
+from twitchcancer.utils.logging import setup_logger
+
+logger = logging.getLogger('twitchcancer')
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--log', dest='loglevel',
+                        help="set the level of messages to display")
+    parser.add_argument('-f', '--config', dest='config',
+                        help="load configuration from this file")
+
+    args = parser.parse_args()
+    if args.config:
+        Config.load(args.config)
+
+    setup_logger(logger, args.loglevel, Config, "expose.log")
+
+    # start running the api forever
+    from twitchcancer.api.websocketapi import run
+
+    run(args)

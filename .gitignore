@@ -1,11 +1,3 @@
-__pycache__/
-*.py[cod]
-*.log
-*config.yml
-*.egg-info/
-.tox/
-.cache/
-build/
-dist/
-pkg/archlinux/src/
-pkg/archlinux/*.zip
+.venv/
+.idea/
+var/

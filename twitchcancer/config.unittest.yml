@@ -1,0 +1,3 @@
+record:
+  mongodb:
+    port: 21001
