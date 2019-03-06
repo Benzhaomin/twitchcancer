@@ -18,21 +18,20 @@ class AsyncWebSocketMonitor(Monitor):
         self.loop = asyncio.get_event_loop()
         self.clients = {}
 
-    # fake a channels property, extracted from clients
     def __getattr__(self, attr):
         if attr == "channels":
             return [channel for client in self.clients.values() for channel in client.channels]
 
-    # join and leave channels, forever
     def run(self):
+        """ Join and leave channels, forever
+        """
         self.loop.run_until_complete(self.mainloop())
 
     async def mainloop(self):
-        # every 60 seconds
         while True:
             await self.autojoin()
 
-            logger.info("cycle ran with %s clients and %s channels over %s viewers up",
+            logger.info("Monitor main loop ran with %s clients and %s channels over %s viewers up",
                         len(self.clients), len(self.channels), self.viewers)
 
             await asyncio.sleep(60)
@@ -107,8 +106,10 @@ class AsyncWebSocketMonitor(Monitor):
     def find_server(self, channel: str) -> str:
         """ Find a server hosting a chat channel
         """
-        properties = TwitchApi.chat_properties(channel)
-        return random.choice(properties['web_socket_servers'])
+        # TODO: apparently Twitch only exposes a single WS server to the internet, we can just use that and be done
+        # properties = TwitchApi.chat_properties(channel)
+        # return random.choice(properties['web_socket_servers'])
+        return 'irc-ws.chat.twitch.tv:80'
 
     def get_client(self, channel: str) -> Optional[TwitchClientFactory]:
         """ Returns the client connected to the server where a channel was joined

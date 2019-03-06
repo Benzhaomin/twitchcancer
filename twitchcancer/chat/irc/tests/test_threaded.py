@@ -206,44 +206,6 @@ class TestChatThreadedLeave(unittest.TestCase):
             client.leave.assert_called_once_with(channel)
 
 
-# ThreadedIRCMonitor.find_server
-class TestChatThreadedFindServer(unittest.TestCase):
-
-    def setUp(self):
-        self.monitor = ThreadedIRCMonitor(1000)
-
-    # check that a None response is handled correctly
-    @patch('twitchcancer.utils.twitchapi.TwitchApi.chat_properties', return_value=None)
-    def test_no_response(self, chat_properties):
-        server = self.monitor.find_server("")
-
-        self.assertIsNone(server)
-
-    # check that an empty response is handled correctly
-    @patch('twitchcancer.utils.twitchapi.TwitchApi.chat_properties', return_value={})
-    def test_empty_json_response(self, chat_properties):
-        server = self.monitor.find_server("")
-
-        self.assertIsNone(server)
-
-    # check that we get a server from Twitch when the request worked
-    @patch('twitchcancer.utils.twitchapi.TwitchApi.chat_properties', return_value={"chat_servers": ["foo"]})
-    def test_default(self, chat_properties):
-        server = self.monitor.find_server("")
-
-        self.assertEqual(server, "foo")
-
-    # check that server selection is random
-    @patch('twitchcancer.utils.twitchapi.TwitchApi.chat_properties',
-           return_value={"chat_servers": ["1", "2", "3", "4", "5"]})
-    def test_random(self, chat_properties):
-        # ask for 10 servers
-        servers = [self.monitor.find_server("") for n in range(10)]
-
-        # we should have gotten more than 1 unique server
-        self.assertGreater(len(set(servers)), 1)
-
-
 def build_streams(streams):
     return {'streams': [{
         "viewers": viewers,
