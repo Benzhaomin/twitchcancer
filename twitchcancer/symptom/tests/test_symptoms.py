@@ -11,8 +11,8 @@ messages = {
     'oneword': p('Elephant'),
     'short': p('lol'),
     'emotesandwords': p('THIS Kappa IS Kappa WHAT Kappa I Kappa CALL Kappa MUSIC'),
-    'longsentence': p('this is a long sentence but so long that it\s too long this is a long sentence but so long '
-                      'that it\s too long this is a long sentence but so long that it\s too long'),
+    'longsentence': p('this is a long sentence but so long that its too long this is a long sentence but so long '
+                      'that its too long this is a long sentence but so long that its too long'),
     'caps': p('THATS A LOT OF Caps'),
 }
 
