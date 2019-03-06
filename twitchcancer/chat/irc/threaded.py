@@ -111,15 +111,7 @@ class ThreadedIRCMonitor(Monitor):
 
     # find a server hosting a channel
     def find_server(self, channel):
-        try:
-            result = TwitchApi.chat_properties(channel)
-
-            if result:
-                return random.choice(result['chat_servers'])
-        except KeyError as e:
-            logger.warning("got an empty json response to a chat properties request %s", e)
-
-        return None
+        return random.choice(result['chat_servers'])
 
     # join big channels, leave offline ones
     def autojoin(self):
