@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
   messages {
     date: datetime of creation
-    channel: "#channel",
+    channel: "channel",
     cancer: cancer points,
   }
 '''
@@ -38,9 +38,9 @@ class InMemoryStore:
         logger.debug('archive started at %s with %s messages total', now_start, len(self.messages))
 
         # run at 12:31:20
-        # bp  at 12:30:00
-        breakpoint = self._live_message_breakpoint()
-        breakpoint = breakpoint.replace(second=0, microsecond=0)
+        # time_breakpoint at 12:30:00
+        time_breakpoint = self._live_message_breakpoint()
+        time_breakpoint = time_breakpoint.replace(second=0, microsecond=0)
 
         '''
           map/reduce self.messages into history = {
@@ -66,7 +66,7 @@ class InMemoryStore:
                 message['date'] = message['date'].replace(second=0, microsecond=0)
 
                 # stop if the message is too new
-                if message['date'] >= breakpoint:
+                if message['date'] >= time_breakpoint:
                     self.messages.appendleft(message)
                     logger.debug('archiving loop stopped at message %s', message['date'])
                     break
@@ -88,13 +88,13 @@ class InMemoryStore:
     # returns live cancer levels based on self.messages
     # @memory.read()
     def cancer(self):
-        breakpoint = self._live_message_breakpoint()
+        time_breakpoint = self._live_message_breakpoint()
         minute = collections.defaultdict(lambda: {'cancer': 0, 'messages': 0})
 
         # sum cancer points and count recent messages for each channel
         with self.messages_lock:
             for message in reversed(self.messages):
-                if message['date'] < breakpoint:
+                if message['date'] < time_breakpoint:
                     break
 
                 minute[message['channel']]['cancer'] += message['cancer']
@@ -119,6 +119,7 @@ class InMemoryStore:
             self.messages.append(message)
 
     # returns the datetime where live and archived messages split
-    def _live_message_breakpoint(self):
+    @staticmethod
+    def _live_message_breakpoint():
         # messages are old and ready to be archived after 1 minute
         return TimeSplitter.last_minute()

@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
   Schema
 
   leaderboard {
-    channel: "#channel",
+    channel: "channel name",
+    channel_id: "twitch channel id",
     date: datetime (creation date),
     minute: {
       cancer: {

@@ -30,7 +30,7 @@ async def create_publishers():
         PubSubTopic('twitchcancer.live', storage.cancer, 1),
         PubSubVariableTopic('twitchcancer.leaderboards.*', storage.leaderboards, 60),
         PubSubVariableTopic('twitchcancer.leaderboard.*', storage.leaderboard, 60),
-        PubSubTopic('twitchcancer.status', storage.status, 60),
+        PubSubTopic('twitchcancer.status', storage.status, 3),
         PubSubVariableTopic('twitchcancer.channel.*', storage.channel, 60),
     ]
 

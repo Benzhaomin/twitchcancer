@@ -48,7 +48,7 @@ class Config:
         if path is None:
             path = os.path.join(os.path.dirname(__file__), "config.default.yml")
         with open(path, 'r') as yaml_file:
-            cls.config = yaml.load(yaml_file)
+            cls.config = yaml.safe_load(yaml_file)
 
     # returns a single value of the configuration
     @classmethod

@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 autobahn = '*'
 irc = '*'
+requests = '*'
 pymongo = '*'
 PyYAML = '*'
 pyzmq = '*'

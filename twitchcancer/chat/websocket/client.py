@@ -26,13 +26,13 @@ async def record(parsed):
 class TwitchClient(WebSocketClientProtocol):
 
     def onOpen(self):  # noqa
-        self.sendMessage('CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership'.encode())
+        self.sendMessage('CAP REQ :twitch.tv/membership'.encode())
         self.sendMessage('PASS {0}'.format(Config.get("monitor.chat.password").lower()).encode())
         self.sendMessage('NICK {0}'.format(Config.get("monitor.chat.username").lower()).encode())
 
         for channel in self.channels:
             self.sendMessage('JOIN {0}'.format(channel).encode())
-            logger.info("auto-joining %s", channel)
+            logger.info("joining %s", channel)
 
     async def onMessage(self, payload, isBinary: bool):  # noqa
         if isBinary:
