@@ -1,6 +1,5 @@
 import time
 import logging
-import random
 from threading import Thread
 
 from twitchcancer.chat.irc.irc import IRC, ServerConfigurationError, ServerConnectionError
@@ -111,7 +110,7 @@ class ThreadedIRCMonitor(Monitor):
 
     # find a server hosting a channel
     def find_server(self, channel):
-        return random.choice(result['chat_servers'])
+        return ''  # <- broken code right here
 
     # join big channels, leave offline ones
     def autojoin(self):

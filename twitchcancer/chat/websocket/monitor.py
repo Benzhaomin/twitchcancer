@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import random
 from typing import Optional
 
 from twitchcancer.chat.monitor import Monitor
