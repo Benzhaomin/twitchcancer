@@ -18,6 +18,10 @@ monitor:
   socket:
     cancer_request: ipc:///tmp/twitchcancer-read-cancer.sock  # live cancer request/response socket
     cancer_summary: ipc:///tmp/twitchcancer-pubsub-summary.sock  # live cancer summary publication socket
+    # override socket/tcp address when working with containers
+    read:
+      cancer_request: ""
+      cancer_summary: ""
 
   # twitch chat credentials
   chat:

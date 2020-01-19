@@ -92,10 +92,11 @@ class ReadOnlyStorage(StorageInterface):
     # @socket.connect()
     def _connect(self):
         self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect(Config.get('monitor.socket.cancer_request'))
+        read_socket = Config.get('monitor.socket.read.cancer_request') or Config.get('monitor.socket.cancer_request')
+        self.socket.connect(read_socket)
         self.poller.register(self.socket, zmq.POLLIN)
 
-        logger.debug("connected cancer socket to %s", Config.get('monitor.socket.cancer_request'))
+        logger.info("connected cancer request socket to %s", read_socket)
 
     # disconnect from the cancer server
     # @socket.close()

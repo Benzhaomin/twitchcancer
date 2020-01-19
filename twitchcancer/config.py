@@ -37,7 +37,7 @@ class Config:
 
         # read the yaml config file
         with open(path, 'r') as yaml_file:
-            yaml_config = yaml.load(yaml_file)
+            yaml_config = yaml.safe_load(yaml_file)
 
         # merge this config with the default one
         cls.update(yaml_config)

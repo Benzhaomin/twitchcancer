@@ -32,13 +32,15 @@ class MemoryStorage(StorageInterface):
         # publish a summary of all cancer messages grouped by minute and channel
         self.zmq_context = zmq.Context()
         self.pubsub_socket = self.zmq_context.socket(zmq.PUB)
-        self.pubsub_socket.bind(Config.get('monitor.socket.cancer_summary'))
-        logger.info("bound publish socket to %s", Config.get('monitor.socket.cancer_summary'))
+        summary_socket = Config.get('monitor.socket.cancer_summary')
+        self.pubsub_socket.bind(summary_socket)
+        logger.info("bound publish socket to %s", summary_socket)
 
         # respond to live cancer requests
         self.cancer_socket = self.zmq_context.socket(zmq.REP)
-        self.cancer_socket.bind(Config.get('monitor.socket.cancer_request'))
-        logger.info("bound cancer socket to %s", Config.get('monitor.socket.cancer_request'))
+        request_socket = Config.get('monitor.socket.cancer_request')
+        self.cancer_socket.bind(request_socket)
+        logger.info("bound cancer socket to %s", request_socket)
 
         # TODO: use asyncio
         t = threading.Thread(target=self._handle_cancer_request)
