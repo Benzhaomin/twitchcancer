@@ -25,8 +25,9 @@ class WriteOnlyStorage(StorageInterface):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
         self.socket.setsockopt(zmq.SUBSCRIBE, b'summary')
-        self.socket.connect(Config.get('monitor.socket.cancer_summary'))
-        logger.info("connected summary socket to %s", Config.get('monitor.socket.cancer_summary'))
+        read_socket = Config.get('monitor.socket.read.cancer_summary') or Config.get('monitor.socket.cancer_summary')
+        self.socket.connect(read_socket)
+        logger.info("connected summary socket to %s", read_socket)
 
     # start listening for summaries to persist
     # @socket.recv()

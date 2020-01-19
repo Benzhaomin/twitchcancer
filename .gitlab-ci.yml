@@ -1,8 +1,8 @@
 tests:
   stage: test
-  image: python:3.5-slim-stretch
+  image: python:3.8-slim-buster
   services:
-  - mongo:4.1
+  - mongo:4.2.1
   variables:
     TWITCHCANCER_CONFIGFILE: twitchcancer/config.ci.yml
   script:
