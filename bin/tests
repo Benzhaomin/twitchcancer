@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-export TWITCHCANCER_CONFIGFILE=twitchcancer/config.unittest.yml
-
-pipenv run python3 -m unittest

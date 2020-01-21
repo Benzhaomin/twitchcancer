@@ -12,22 +12,30 @@ Any single one can be restarted or down, the others will reconnect when possible
 
 ## Install
 
-Requires :
+```
+git clone https://github.com/Benzhaomin/twitchcancer.git
+cd twitchcancer
+python3 -m venv venv
+source venv/bin/activate
+pip install -e .
+```
 
-- python3 (>= 3.4)
-- pipenv
+## Dev
 
-```shell
-pipenv sync --dev
-pipenv run docker-compose up -d
-bin/tests
+Install +
+
+```
+pip install -e .[dev]
+export TWITCHCANCER_CONFIGFILE=config.unittest.yml
+nosetests
+flake8
 ```
 
 Edit your local config file (see Configuration)
 
 ### Configuration
 
-You can use the `-f` or `--config` switch to pass the path of a configuration file overriding any of the [default settings](twitchcancer/config.default.yml).
+You can use the `TWITCHCANCER_CONFIGFILE` env variable or the `-c` or `--config` switch to pass the path of a configuration file overriding any of the [default settings](twitchcancer/config.default.yml).
 
 The monitor module requires a valid Twitch username, an active oauth key and an API Client ID, example:
 
@@ -41,7 +49,7 @@ monitor:
 
 You would then run the monitor module with:
 
-`bin/monitor -f myconfig.yml`
+`twitchcancer-monitor -c myconfig.yml`
 
 ## Monitor
 
@@ -62,7 +70,7 @@ or
 
 ### Usage
 
-See `bin/monitor -h`
+See `twitchcancer-monitor -h`
 
 ## Record
 
@@ -78,7 +86,7 @@ See `bin/monitor -h`
 
 ### Usage
 
-See `bin/record -h`
+See `twitchcancer-record -h`
 
 ### Maintenance
 
@@ -101,7 +109,7 @@ db.runCommand ( { compact: 'daily_leaderboard' } )
 
 ### Usage
 
-See `bin/expose -h`
+See `twitchcancer-expose -h`
 
 - connect to: 'ws://localhost:8080'
 - subscribe: `{'subscribe': 'topic'}'

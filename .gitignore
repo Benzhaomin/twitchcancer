@@ -1,6 +1,8 @@
-.venv/
-.idea/
+__pycache__
+*.py[cod]
+.coverage
 .env
-var/
-__pycache__/
+*.egg-info/
 certs/
+venv/
+var/

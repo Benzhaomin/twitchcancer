@@ -10,7 +10,9 @@ services:
     build: .
     image: ${TWITCHCANCER_IMAGE}
     restart: always
-    command: bin/monitor
+    command: twitchcancer-monitor
+    environment:
+      - TWITCHCANCER_CONFIGFILE
     volumes:
       - ./var/config/:/var/app/var/config/
     networks:
@@ -22,7 +24,9 @@ services:
     container_name: twitchcancer_record
     image: ${TWITCHCANCER_IMAGE}
     restart: always
-    command: bin/record
+    command: twitchcancer-record
+    environment:
+      - TWITCHCANCER_CONFIGFILE
     networks:
       - internal
     depends_on:
@@ -37,7 +41,9 @@ services:
     container_name: twitchcancer_expose
     image: ${TWITCHCANCER_IMAGE}
     restart: always
-    command: bin/expose
+    command: twitchcancer-expose
+    environment:
+      - TWITCHCANCER_CONFIGFILE
     volumes:
       - ./var/config/:/var/app/var/config/
       - ${CANCERINO_CERTS}:/var/app/var/ssl/

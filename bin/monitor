@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-export TWITCHCANCER_CONFIGFILE=var/config/dev.yml
-export PYTHONPATH=$(dirname $(dirname $0))
-
-pipenv run twitchcancer/twitchcancer-monitor "$@"

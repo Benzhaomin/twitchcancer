@@ -2,12 +2,10 @@ tests:
   stage: test
   image: python:3.8-slim-buster
   services:
-  - mongo:4.2.1
+    - mongo:4.2.1
   variables:
     TWITCHCANCER_CONFIGFILE: twitchcancer/config.ci.yml
   script:
-  - pip install --no-cache-dir --trusted-host pypi.python.org pipenv
-  - pipenv sync --dev
-  - pipenv run python3 -m unittest
-  - pipenv run flake8
-  - pipenv check
+    - pip install -e .[dev]
+    - nosetests
+    - flake8

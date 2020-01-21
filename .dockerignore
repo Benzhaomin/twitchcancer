@@ -1,3 +1,10 @@
-.venv/
-var/
+__pycache__
+*.py[cod]
+.coverage
+.env
+Dockerfile*
+*.egg-info/
+.git/
 certs/
+venv/
+var/

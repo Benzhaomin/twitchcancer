@@ -1,0 +1,12 @@
+FROM python:3.8-alpine
+
+WORKDIR /var/app
+COPY . /var/app
+RUN set -ex; \
+    apk add --no-cache libstdc++; \
+    apk add --no-cache --virtual .build-deps \
+        build-base \
+        libffi-dev \
+        openssl-dev; \
+    pip install --no-cache --no-binary cryptography -e .; \
+    apk --purge del .build-deps;
