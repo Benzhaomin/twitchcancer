@@ -6,7 +6,7 @@ with open("README.md") as f:
 
 setup(
     name="twitchcancer",
-    version="0.6.0",
+    version="0.6.1",
     author="Benjamin Maisonnas",
     author_email="ben@wainei.net",
     description="Suite of tools to monitor and analyze chat cancer in Twitch chatrooms.",
@@ -33,7 +33,6 @@ setup(
     },
     install_requires=[
         "autobahn==20.1.2",
-        "irc==18.0.0",
         "requests==2.22.0",
         "pymongo==3.10.1",
         "PyYAML==5.3",

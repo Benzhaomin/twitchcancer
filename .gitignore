@@ -2,6 +2,7 @@ __pycache__
 *.py[cod]
 .coverage
 .env
+.vscode/
 *.egg-info/
 certs/
 venv/

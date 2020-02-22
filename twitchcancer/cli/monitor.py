@@ -18,8 +18,6 @@ def main():
                         help="load configuration from this file")
     parser.add_argument('--viewers', dest='viewers', default=0, type=int,
                         help="minimum viewer count to monitor channels (default: 0)")
-    parser.add_argument("--protocol", dest="protocol", default="websocket",
-                        help="protocol to use to monitor chat channels, websocket or irc (default: websocket)")
 
     args = parser.parse_args()
     if args.config:

@@ -26,7 +26,8 @@ Install +
 
 ```
 pip install -e .[dev]
-export TWITCHCANCER_CONFIGFILE=config.unittest.yml
+docker run --rm -d -p 21001:27017 --name twitchcancer_testdb mongo:4.2.1
+export TWITCHCANCER_CONFIGFILE=$(pwd)/twitchcancer/config.unittest.yml
 nosetests
 flake8
 ```
@@ -55,17 +56,14 @@ You would then run the monitor module with:
 
 ### Goal
 
-- join chat channels on Twitch (IRC or WebSocket)
+- join chat channels on Twitch
 - compute cancer points for each message based on a cancer diagnosis
 - store these in-memory and publish reports every minute on a ZeroMQ socket
 
 ### Requirements
 
-- IRC: https://pypi.python.org/pypi/irc
-or
-- Python >= 3.4 (asyncio)
+- Python >= 3.5 (asyncio)
 - AutoBahn: https://autobahn.ws/python
-
 - PyZMQ: https://github.com/zeromq/pyzmq
 
 ### Usage
