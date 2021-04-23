@@ -32,7 +32,7 @@ setup(
         ],
     },
     install_requires=[
-        "autobahn==20.2.1",
+        "autobahn==20.12.3",
         "requests==2.23.0",
         "pymongo==3.10.1",
         "PyYAML==5.3",
