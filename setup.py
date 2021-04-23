@@ -35,7 +35,7 @@ setup(
         "autobahn==20.12.3",
         "requests==2.23.0",
         "pymongo==3.10.1",
-        "PyYAML==5.3",
+        "PyYAML==5.4",
         "pyzmq==18.1.1",
     ],
     extras_require={
