@@ -33,7 +33,7 @@ setup(
     },
     install_requires=[
         "autobahn==20.12.3",
-        "requests==2.23.0",
+        "requests==2.31.0",
         "pymongo==3.10.1",
         "PyYAML==5.4",
         "pyzmq==18.1.1",
